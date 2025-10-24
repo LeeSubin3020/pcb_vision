@@ -29,7 +29,7 @@ namespace PCBVison
 
             // 2. UI 컨트롤(startbt)의 클릭 이벤트를 IMainView의 이벤트에 연결합니다.
             //    이제 startbt 버튼이 클릭되면, StartStopClicked 이벤트가 발생하여 Presenter에게 알려줍니다.
-            this.startbt.Click += (sender, e) => StartStopClicked?.Invoke(sender, e);
+            this.btnStartInspect.Click += (sender, e) => StartStopClicked?.Invoke(sender, e);
 
             // 3. Form의 Closing 이벤트를 IMainView의 이벤트에 연결합니다.
             base.FormClosing += (sender, e) => FormClosing?.Invoke(sender, e);
@@ -78,8 +78,8 @@ namespace PCBVison
         /// Presenter의 지시에 따라 시작/중지 버튼의 텍스트를 변경하는 속성입니다.
         public string StartButtonText
         {
-            get { return startbt.Text; }
-            set { startbt.Text = value; }
+            get { return btnStartInspect.Text; }
+            set { btnStartInspect.Text = value; }
         }
 
         /// Presenter의 요청에 따라 오류 메시지 박스를 띄웁니다.
@@ -87,6 +87,5 @@ namespace PCBVison
         { 
             MessageBox.Show(message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
-
     }
 }
