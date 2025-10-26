@@ -1,0 +1,197 @@
+# PCBVison/Models/MainModel.cs 수정 안내서 (v2)
+
+안녕하세요. 컴파일 오류를 해결하기 위한 두 번째 안내서입니다.
+
+## 1. 문제 원인
+
+오류 메시지는 현재 프로젝트에 설치된 `OpenCvSharp` 라이브러리 버전이 코드에 사용된 일부 최신 함수(또는 확장 함수)를 지원하지 않거나, 필요한 네임스페이스가 선언되지 않았기 때문에 발생했습니다.
+
+- **`NMSBoxes` 오류:** `Cv2.NMSBoxes` 함수를 사용하기 위해 필요한 `using OpenCvSharp.Dnn;` 선언이 누락되었습니다.
+- **`GetData` 오류:** `Mat.GetData` 확장 메서드가 현재 라이브러리 버전과 호환되지 않는 것으로 보입니다. 모든 버전에서 동작하는 보다 근본적인 데이터 복사 방법으로 대체해야 합니다.
+
+## 2. 해결 방법
+
+이러한 호환성 문제를 해결하기 위해 다음과 같이 코드를 수정했습니다.
+
+- 파일 상단에 `using OpenCvSharp.Dnn;` 과 `using System.Runtime.InteropServices;` 를 추가했습니다.
+- `PreprocessImage` 메서드 내에서 `GetData` 대신 `Marshal.Copy`를 사용하여 이미지 데이터를 복사하도록 로직을 변경했습니다.
+
+## 3. 수정할 코드
+
+아래 코드는 `PCBVison/Models/MainModel.cs` 파일의 **전체 내용**입니다. 기존 파일의 모든 내용을 지우고 아래 코드를 그대로 붙여넣어 주세요.
+
+```csharp
+using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.Tensors;
+using OpenCvSharp;
+using OpenCvSharp.Dnn;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+
+namespace PCBVison.Models
+{
+    public class PcbModel
+    {
+        private readonly InferenceSession _session;
+        // 사용자가 제공한 10개의 클래스 라벨
+        private readonly string[] _labels = new string[]
+        {
+            "Audio Port", "Camera Port", "Display", "GPIO", "Hdmi Port",
+            "LAN Port", "MCU Chip", "USB Port", "charging Port", "charging Port"
+        };
+
+        private const float _confidenceThreshold = 0.5f; // 신뢰도 임계값 (이 값 이상일 때만 객체로 인식)
+        private const float _nmsThreshold = 0.4f;      // NMS 임계값 (이 값 이상 겹치는 박스는 하나로 합침)
+
+        public PcbModel(string modelPath)
+        {
+            // ONNX 런타임 세션 초기화
+            _session = new InferenceSession(modelPath);
+        }
+
+        public List<DetectionResult> Predict(Mat frame)
+        {
+            // --- 1. 이미지 전처리 ---
+            var inputSize = new Size(640, 640);
+            var input = PreprocessImage(frame, inputSize);
+
+            // --- 2. ONNX 모델 추론 실행 ---
+            var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor("images", input) };
+            using (var outputs = _session.Run(inputs))
+            {
+                var outputTensor = outputs.First().AsTensor<float>();
+
+                // --- 3. 추론 결과 후처리 ---
+                return Postprocess(outputTensor, frame.Size(), inputSize);
+            }
+        }
+
+        private DenseTensor<float> PreprocessImage(Mat frame, Size inputSize)
+        {
+            // 이미지를 모델 입력 크기(640x640)로 조절
+            Mat resized = new Mat();
+            Cv2.Resize(frame, resized, inputSize);
+
+            // BGR을 RGB로 변환하고 픽셀 값을 0~1 사이로 정규화
+            var floatImage = new Mat();
+            resized.ConvertTo(floatImage, MatType.CV_32FC3, 1.0 / 255.0);
+            Cv2.CvtColor(floatImage, floatImage, ColorConversionCodes.BGR2RGB);
+
+            // HWC(Height, Width, Channel) 포맷을 CHW(Channel, Height, Width) 포맷으로 변경
+            var channels = Cv2.Split(floatImage);
+            var inputData = new float[1 * 3 * inputSize.Width * inputSize.Height];
+            int channelSize = inputSize.Width * inputSize.Height;
+
+            // Marshal.Copy를 사용하여 각 채널의 데이터를 배열로 복사
+            Marshal.Copy(channels[0].Data, inputData, 0, channelSize);
+            Marshal.Copy(channels[1].Data, inputData, channelSize, channelSize);
+            Marshal.Copy(channels[2].Data, inputData, 2 * channelSize, channelSize);
+
+            return new DenseTensor<float>(inputData, new int[] { 1, 3, inputSize.Height, inputSize.Width });
+        }
+
+        private List<DetectionResult> Postprocess(Tensor<float> output, Size originalSize, Size inputSize)
+        {
+            var results = new List<DetectionResult>();
+            var bboxes = new List<Rect>();
+            var confidences = new List<float>();
+            var classIds = new List<int>();
+
+            // YOLOv8 출력 텐서(1, 84, 8400)를 (8400, 84) 형태로 변환하여 다루기 쉽게 함
+            var transposedOutput = Transpose(output.ToArray(), output.Dimensions[1], output.Dimensions[2]);
+
+            int numProposals = (int)output.Dimensions[2]; // 8400
+            int numClasses = _labels.Length;
+
+            for (int i = 0; i < numProposals; i++)
+            {
+                // 전체 신뢰도 점수 확인
+                float confidence = transposedOutput[i, 4];
+
+                if (confidence > _confidenceThreshold)
+                {
+                    // 클래스 점수 부분만 추출
+                    var classScores = new float[numClasses];
+                    for(int j = 0; j < numClasses; j++)
+                    {
+                        classScores[j] = transposedOutput[i, 4 + j];
+                    }
+
+                    // 가장 높은 점수를 가진 클래스 찾기
+                    float maxClassScore = classScores.Max();
+                    int classId = Array.IndexOf(classScores, maxClassScore);
+                    
+                    if (maxClassScore > 0.5f) // 클래스 점수 임계값
+                    {
+                        // 박스 좌표(중심x, 중심y, 너비, 높이) 가져오기
+                        float cx = transposedOutput[i, 0];
+                        float cy = transposedOutput[i, 1];
+                        float w = transposedOutput[i, 2];
+                        float h = transposedOutput[i, 3];
+
+                        // 좌표를 원본 이미지 크기에 맞게 스케일링
+                        float scaleX = (float)originalSize.Width / inputSize.Width;
+                        float scaleY = (float)originalSize.Height / inputSize.Height;
+
+                        int x1 = (int)((cx - w / 2) * scaleX);
+                        int y1 = (int)((cy - h / 2) * scaleY);
+                        int width = (int)(w * scaleX);
+                        int height = (int)(h * scaleY);
+
+                        // NMS를 위해 박스, 신뢰도, 클래스 ID 저장
+                        bboxes.Add(new Rect(x1, y1, width, height));
+                        confidences.Add(confidence);
+                        classIds.Add(classId);
+                    }
+                }
+            }
+
+            // Non-Maximum Suppression 실행하여 중복 박스 제거
+            if (bboxes.Any())
+            {
+                int[] indices = CvDnn.NMSBoxes(bboxes, confidences, _confidenceThreshold, _nmsThreshold);
+
+                // 최종 선택된 박스만 결과에 추가
+                foreach (int index in indices)
+                {
+                    results.Add(new DetectionResult
+                    {
+                        Rect = bboxes[index],
+                        Label = _labels[classIds[index]],
+                        Confidence = confidences[index]
+                    });
+                }
+            }
+
+            return results;
+        }
+
+        // YOLO 출력 텐서를 다루기 쉽게 전치하는 헬퍼 함수
+        private float[,] Transpose(float[] data, long dim1, long dim2)
+        {
+            var transposed = new float[dim2, dim1];
+            for (long i = 0; i < dim1; i++)
+            {
+                for (long j = 0; j < dim2; j++)
+                {
+                    transposed[j, i] = data[i + j * dim1];
+                }
+            }
+            return transposed;
+        }
+    }
+
+    public class DetectionResult
+    {
+        public Rect Rect { get; set; }
+        public string Label { get; set; }
+        public float Confidence { get; set; }
+    }
+}
+```
+
+**수정 후 참고:**
+
+- `CvDnn.NMSBoxes`로 호출하는 부분이 있는데, 만약 이 부분에서도 오류가 발생하면 `Cv2.dnn.NMSBoxes`로 변경해 보시기 바랍니다. (라이브러리 버전에 따라 호출 방식이 다를 수 있습니다.)

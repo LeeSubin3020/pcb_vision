@@ -1,15 +1,34 @@
 ﻿using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using OpenCvSharp;
+using OpenCvSharp.Dnn;
+using OpenCvSharp.XImgProc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace PCBVison.Models
 {
     public class PcbModel
     {
         private readonly InferenceSession session;
+
+        private readonly string[] labels = new string[]
+        {
+            "Audio Port", "Camera Port", "Display", "GPIO", "Hdmi Port",
+            "LAN Port", "MCU Chip", "USB Port", "charging Port"
+        };
+
+        private readonly Scalar[] colors = new Scalar[]
+        {
+            Scalar.Red, Scalar.Blue, Scalar.Green, Scalar.Yellow,
+            Scalar.Cyan, Scalar.Magenta, Scalar.Orange, Scalar.Pink,
+            Scalar.Brown, Scalar.Lime
+        };
+
+        private const float confidenceThreshold = 0.05f; // 신뢰도 임계값(지정값 이상일때만 객체로 인식)
+        private const float nmsThreshold = 0.4f;  // NMS 임계값 (이 값 이상 겹치는 박스는 하나로 합침)
 
         public PcbModel(string modelPath)
         {
@@ -20,9 +39,22 @@ namespace PCBVison.Models
         {
             List<DetectionResult> results = new List<DetectionResult>();
 
-            // 1️⃣ 이미지 전처리
+            int originalWidth = frame.Width;
+            int originalHeight = frame.Height;
+
+            float xFactor = originalWidth / 640f;
+            float yFactor = originalHeight / 640f;
+
+            // 이미지 전처리
             Mat resized = new Mat();
             Cv2.Resize(frame, resized, new OpenCvSharp.Size(640, 640));
+
+            // Ensure the image is 3 channels (BGR) before further processing
+            if (resized.Channels() == 1)
+            {
+                Cv2.CvtColor(resized, resized, ColorConversionCodes.GRAY2BGR);
+            }
+
             Cv2.CvtColor(resized, resized, ColorConversionCodes.BGR2RGB);
 
             float[] imgData = new float[3 * 640 * 640];
@@ -37,28 +69,77 @@ namespace PCBVison.Models
 
             using (var output = session.Run(inputs))
             {
-                // YOLOv8 ONNX 출력 텐서 가져오기
                 var outputTensor = output.First().AsTensor<float>();
-                var outputArray = outputTensor.ToArray();
 
-                int numDetections = outputArray.Length / 85; // YOLOv8 기준: 85 = 4(xywh)+1(conf)+80(class)
-                for (int i = 0; i < numDetections; i++)
+                // The output of YOLOv8 is often [1, 8400, 84]
+                // where 8400 is the number of detections, and 84 is [x, y, w, h, class_0, ..., class_79]
+                const int numProposals = 8400;
+
+                List<Rect> boxes = new List<Rect>();
+                List<float> confidences = new List<float>();
+                List<int> classIds = new List<int>();
+
+                for (int i = 0; i < numProposals; i++)
                 {
-                    float x = outputArray[i * 85 + 0];
-                    float y = outputArray[i * 85 + 1];
-                    float w = outputArray[i * 85 + 2];
-                    float h = outputArray[i * 85 + 3];
-                    float conf = outputArray[i * 85 + 4];
-                    int classId = (int)outputArray[i * 85 + 5]; // 클래스 ID
+                    float x = outputTensor[0, 0, i];
+                    float y = outputTensor[0, 1, i];
+                    float w = outputTensor[0, 2, i];
+                    float h = outputTensor[0, 3, i];
+                    float objectConfidence = outputTensor[0, 4, i];
 
-                    if (conf > 0.5f) // confidence threshold
+                    // 클래스 확률 중 최대값 찾기
+                    float maxProb = 0f;
+                    int clsId = -1;
+
+
+                    int numClasses = outputTensor.Dimensions[1] - 5;
+                    for (int c = 0; c < numClasses; c++)
                     {
-                        results.Add(new DetectionResult
+                        float classProb = outputTensor[0, 5 + c, i];
+                        if (classProb > maxProb)
                         {
-                            Rect = new Rect((int)(x - w / 2), (int)(y - h / 2), (int)w, (int)h),
-                            Label = $"PCB_{classId}",
-                            Confidence = conf
-                        });
+                            maxProb = classProb;
+                            clsId = c;
+                        }
+                    }
+
+                    float confidence = objectConfidence * maxProb;
+
+                    if (confidence > confidenceThreshold)
+                    {
+                        int left = (int)((x - w / 2) * 640);  // 640 = resized width
+                        int top = (int)((y - h / 2) * 640);
+                        int width = (int)(w * 640);
+                        int height = (int)(h * 640);
+
+                        Console.WriteLine($"Box {i}: left={left}, top={top}, w={width}, h={height}, conf={confidence:F3}");
+
+                        boxes.Add(new Rect(left, top, width, height));
+                        confidences.Add(confidence);
+                        classIds.Add(clsId);
+                    }
+
+                }
+
+
+                if (boxes.Count > 0)
+                {
+                    int[] indices;
+                    CvDnn.NMSBoxes(boxes.ToArray(), confidences.ToArray(), confidenceThreshold, nmsThreshold, out indices);
+
+                    foreach (int idxNms in indices)
+                    {
+                        int clsIndex = classIds[idxNms];
+                        if (clsIndex >= 0 && clsIndex < labels.Length)
+                        {
+                            results.Add(new DetectionResult
+                            {
+                                Rect = boxes[idxNms],
+                                Label = labels[clsIndex],
+                                Confidence = confidences[idxNms],
+                                LabelIndex = clsIndex
+                            });
+                        }
                     }
                 }
             }
@@ -73,6 +154,8 @@ namespace PCBVison.Models
         public Rect Rect { get; set; }
         public string Label { get; set; }
         public float Confidence { get; set; }
+
+        public int LabelIndex { get; set; }
     }
 }
 

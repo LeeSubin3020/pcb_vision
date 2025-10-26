@@ -83,27 +83,30 @@ namespace PCBVison.Presenters
         {
             try
             {
-                while (_isRunning) 
+                while (_isRunning)
                 {
                     if (_capture.Read(_frame) && !_frame.Empty())
                     {
-                        // 2. Mat 형식의 프레임을 Bitmap 형식으로 변환 (using으로 메모리 관리)
-                        using (var image = BitmapConverter.ToBitmap(_frame))
+                        // 1. 모델 추론 실행
+                        var results = _model.Predict(_frame);
+
+                        // 2. 추론 결과를 원본 프레임(_frame)에 그리기
+                        foreach (var r in results)
                         {
-                            var results = _model.Predict(_frame);
-                            foreach (var r in results)
-                            {
-                                Cv2.Rectangle(_frame, r.Rect, Scalar.Red, 2);
-                                Cv2.PutText(_frame, $"{r.Label} {r.Confidence:F2}",
-                                    new OpenCvSharp.Point(r.Rect.X, r.Rect.Y - 5),
-                                    HersheyFonts.HersheySimplex, 0.5, Scalar.Blue, 1);
-                            }
-                            // 3. View에게 "이 이미지를 화면에 표시해줘" 라고 지시 (Presenter에서 복제)
-                            using (var bitmap = BitmapConverter.ToBitmap(_frame))
-                            {
-                                _view.ImageViewerImage = (Bitmap)image.Clone();
-                            }
-                       
+                            // 디버깅을 위해 감지된 객체의 좌표를 로그로 출력
+                            _view.Log($"Found: {r.Label} at {r.Rect}");
+
+                            Cv2.Rectangle(_frame, r.Rect, Scalar.Red, 2);
+                            Cv2.PutText(_frame, $"{r.Label} {r.Confidence:F2}",
+                                new OpenCvSharp.Point(r.Rect.X, r.Rect.Y - 5),
+                                HersheyFonts.HersheySimplex, 0.5, Scalar.Blue, 1);
+                        }
+
+                        // 3. 결과가 그려진 프레임을 Bitmap으로 변환하여 View에 전달
+                        using (var bitmap = BitmapConverter.ToBitmap(_frame))
+                        {
+                            // View에 이미지를 전달할 때는 복사본을 전달하여 스레드간 충돌을 방지합니다.
+                            _view.ImageViewerImage = (Bitmap)bitmap.Clone();
                         }
                     }
                     Thread.Sleep(30);

@@ -1,0 +1,198 @@
+# PCBVison/Models/MainModel.cs 수정 안내서
+
+안녕하세요! 현재 겪고 계신 문제를 해결하기 위해 `PCBVison/Models/MainModel.cs` 파일을 수정하는 방법을 안내해 드립니다.
+
+## 1. 문제 원인
+
+기존 코드에는 YOLOv8 모델의 출력 결과를 처리하는 데 몇 가지 중요한 문제점들이 있었습니다.
+
+- **잘못된 데이터 구조 해석:** 모델의 2차원 출력 데이터를 1차원으로 잘못 해석하여 박스 좌표와 신뢰도를 정확히 읽지 못했습니다.
+- **클래스 판별 오류:** 부품의 종류(클래스)를 결정하는 로직이 잘못되어, 엉뚱한 라벨이 표시되었습니다.
+- **NMS(Non-Maximum Suppression) 부재:** 하나의 부품에 대해 생성되는 여러 개의 중복된 박스를 제거하는 과정이 없어, 수십 개의 박스가 겹쳐 보이는 현상이 발생했습니다.
+- **좌표 변환 부재:** 640x640 이미지 기준으로 나온 결과를 원본 영상 크기로 변환하지 않아, 박스가 엉뚱한 위치에 그려질 수 있었습니다.
+
+## 2. 해결 방법
+
+이 문제들을 해결하기 위해 `PcbModel` 클래스의 전체 코드를 아래의 새 코드로 교체해야 합니다. 새로운 코드는 다음과 같은 개선 사항을 포함합니다.
+
+- **정확한 라벨 목록:** 알려주신 10개의 부품 이름을 코멘트와 함께 정확히 포함했습니다.
+- **YOLOv8 출력 데이터 처리:** 모델의 출력 구조에 맞게 데이터를 정확히 파싱하고 전치(Transpose)하여 처리합니다.
+- **올바른 클래스 판별:** 각 박스 후보마다 가장 높은 점수를 받은 클래스를 찾아 정확한 라벨을 부여합니다.
+- **NMS 적용:** OpenCV의 `NMSBoxes` 함수를 사용하여 중복된 박스를 효과적으로 제거합니다.
+- **좌표 스케일링:** 박스 좌표를 원본 영상 크기에 맞게 변환하여 정확한 위치에 표시합니다.
+
+## 3. 수정할 코드
+
+아래 코드는 `PCBVison/Models/MainModel.cs` 파일의 **전체 내용**입니다. 기존 파일의 모든 내용을 지우고 아래 코드를 그대로 붙여넣어 주세요.
+
+```csharp
+using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.Tensors;
+using OpenCvSharp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace PCBVison.Models
+{
+    public class PcbModel
+    {
+        private readonly InferenceSession _session;
+        // 사용자가 제공한 10개의 클래스 라벨
+        private readonly string[] _labels = new string[]
+        {
+            "Audio Port", "Camera Port", "Display", "GPIO", "Hdmi Port",
+            "LAN Port", "MCU Chip", "USB Port", "charging Port", "charging Port"
+        };
+
+        private const float _confidenceThreshold = 0.5f; // 신뢰도 임계값 (이 값 이상일 때만 객체로 인식)
+        private const float _nmsThreshold = 0.4f;      // NMS 임계값 (이 값 이상 겹치는 박스는 하나로 합침)
+
+        public PcbModel(string modelPath)
+        {
+            // ONNX 런타임 세션 초기화
+            _session = new InferenceSession(modelPath);
+        }
+
+        public List<DetectionResult> Predict(Mat frame)
+        {
+            // --- 1. 이미지 전처리 ---
+            var inputSize = new Size(640, 640);
+            var input = PreprocessImage(frame, inputSize);
+
+            // --- 2. ONNX 모델 추론 실행 ---
+            var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor("images", input) };
+            using (var outputs = _session.Run(inputs))
+            {
+                var outputTensor = outputs.First().AsTensor<float>();
+
+                // --- 3. 추론 결과 후처리 ---
+                return Postprocess(outputTensor, frame.Size(), inputSize);
+            }
+        }
+
+        private DenseTensor<float> PreprocessImage(Mat frame, Size inputSize)
+        {
+            // 이미지를 모델 입력 크기(640x640)로 조절
+            Mat resized = new Mat();
+            Cv2.Resize(frame, resized, inputSize);
+
+            // BGR을 RGB로 변환하고 픽셀 값을 0~1 사이로 정규화
+            var floatImage = new Mat();
+            resized.ConvertTo(floatImage, MatType.CV_32FC3, 1.0 / 255.0);
+            Cv2.CvtColor(floatImage, floatImage, ColorConversionCodes.BGR2RGB);
+
+            // HWC(Height, Width, Channel) 포맷을 CHW(Channel, Height, Width) 포맷으로 변경
+            var channels = Cv2.Split(floatImage);
+            var inputData = new float[1 * 3 * inputSize.Width * inputSize.Height];
+            Array.Copy(channels[0].Reshape(1, 1).GetData<float>(), 0, inputData, 0, inputData.Length / 3);
+            Array.Copy(channels[1].Reshape(1, 1).GetData<float>(), 0, inputData, inputData.Length / 3, inputData.Length / 3);
+            Array.Copy(channels[2].Reshape(1, 1).GetData<float>(), 0, inputData, 2 * (inputData.Length / 3), inputData.Length / 3);
+
+            return new DenseTensor<float>(inputData, new int[] { 1, 3, inputSize.Height, inputSize.Width });
+        }
+
+        private List<DetectionResult> Postprocess(Tensor<float> output, Size originalSize, Size inputSize)
+        {
+            var results = new List<DetectionResult>();
+            var bboxes = new List<Rect>();
+            var confidences = new List<float>();
+            var classIds = new List<int>();
+
+            // YOLOv8 출력 텐서(1, 84, 8400)를 (8400, 84) 형태로 변환하여 다루기 쉽게 함
+            var transposedOutput = Transpose(output.ToArray(), output.Dimensions[1], output.Dimensions[2]);
+
+            int numProposals = (int)output.Dimensions[2]; // 8400
+            int numClasses = _labels.Length;
+
+            for (int i = 0; i < numProposals; i++)
+            {
+                // 전체 신뢰도 점수 확인
+                float confidence = transposedOutput[i, 4];
+
+                if (confidence > _confidenceThreshold)
+                {
+                    // 80개 클래스 점수 중 가장 높은 점수와 해당 클래스 ID 찾기
+                    float maxClassScore = 0;
+                    int classId = -1;
+
+                    for (int j = 0; j < numClasses; j++)
+                    {
+                        // 클래스 점수는 4번 인덱스 뒤에 위치함
+                        float score = transposedOutput[i, 4 + j];
+                        if (score > maxClassScore)
+                        {
+                            maxClassScore = score;
+                            classId = j;
+                        }
+                    }
+
+                    // 유효한 클래스를 찾았을 경우
+                    if (maxClassScore > 0.0f)
+                    {
+                        // 박스 좌표(중심x, 중심y, 너비, 높이) 가져오기
+                        float cx = transposedOutput[i, 0];
+                        float cy = transposedOutput[i, 1];
+                        float w = transposedOutput[i, 2];
+                        float h = transposedOutput[i, 3];
+
+                        // 좌표를 원본 이미지 크기에 맞게 스케일링
+                        float scaleX = (float)originalSize.Width / inputSize.Width;
+                        float scaleY = (float)originalSize.Height / inputSize.Height;
+
+                        int x1 = (int)((cx - w / 2) * scaleX);
+                        int y1 = (int)((cy - h / 2) * scaleY);
+                        int width = (int)(w * scaleX);
+                        int height = (int)(h * scaleY);
+
+                        // NMS를 위해 박스, 신뢰도, 클래스 ID 저장
+                        bboxes.Add(new Rect(x1, y1, width, height));
+                        confidences.Add(confidence);
+                        classIds.Add(classId);
+                    }
+                }
+            }
+
+            // Non-Maximum Suppression 실행하여 중복 박스 제거
+            if (bboxes.Any())
+            {
+                int[] indices = Cv2.NMSBoxes(bboxes, confidences, _confidenceThreshold, _nmsThreshold);
+
+                // 최종 선택된 박스만 결과에 추가
+                foreach (int index in indices)
+                {
+                    results.Add(new DetectionResult
+                    {
+                        Rect = bboxes[index],
+                        Label = _labels[classIds[index]],
+                        Confidence = confidences[index]
+                    });
+                }
+            }
+
+            return results;
+        }
+
+        // YOLO 출력 텐서를 다루기 쉽게 전치하는 헬퍼 함수
+        private float[,] Transpose(float[] data, long dim1, long dim2)
+        {
+            var transposed = new float[dim2, dim1];
+            for (long i = 0; i < dim1; i++)
+            {
+                for (long j = 0; j < dim2; j++)
+                {
+                    transposed[j, i] = data[i + j * dim1];
+                }
+            }
+            return transposed;
+        }
+    }
+
+    public class DetectionResult
+    {
+        public Rect Rect { get; set; }
+        public string Label { get; set; }
+        public float Confidence { get; set; }
+    }
+}
+```
