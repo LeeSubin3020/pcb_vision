@@ -18,14 +18,15 @@ namespace PCBVison
         // new 키워드를 추가하여 부모 클래스의 FormClosing 이벤트를 의도적으로 숨긴다는 것을 명시합니다.
         public new event FormClosingEventHandler FormClosing;
 
-
         public Form1()
         {
             InitializeComponent();
 
+
             // 1. 자신의 파트너인 MainPresenter를 생성합니다. 
             //    이때, this(Form1 자기 자신)를 넘겨주어 Presenter가 자신을 제어할 수 있도록 합니다.
-            _presenter = new MainPresenter(this);
+            string onnxPath = @"C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\best.onnx";
+            _presenter = new MainPresenter(this, onnxPath);
 
             // 2. UI 컨트롤(startbt)의 클릭 이벤트를 IMainView의 이벤트에 연결합니다.
             //    이제 startbt 버튼이 클릭되면, StartStopClicked 이벤트가 발생하여 Presenter에게 알려줍니다.
@@ -61,6 +62,7 @@ namespace PCBVison
             }
         }
 
+        // 로그 메시지를 터미널(TextBox)에 표시
         public void Log(string message)
         {
             if (terminalLog.InvokeRequired) // 다른 스레드에서 호출될 경우

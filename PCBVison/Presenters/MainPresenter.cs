@@ -1,8 +1,10 @@
-using OpenCvSharp;
-using PCBVison.Views;
 using System;
 using System.Drawing;
+using System.Collections.Generic;
 using System.Threading;
+using PCBVison.Views;
+using PCBVison.Models;
+using OpenCvSharp;
 using OpenCvSharp.Extensions;
 
 namespace PCBVison.Presenters
@@ -15,15 +17,18 @@ namespace PCBVison.Presenters
         // --- 멤버 변수 선언 ---
 
         private readonly IMainView _view; // View와 통신하기 위한 인터페이스. Presenter는 이것이 Form1인지 전혀 모릅니다.
+        private readonly PcbModel _model;
         private VideoCapture _capture;    // OpenCV 카메라 캡처 객체
         private Mat _frame;               // 카메라로부터 한 프레임을 받아올 객체
         private Thread _cameraThread;     // 실시간 영상 처리를 위한 별도의 스레드
         private bool _isRunning;          // 카메라 동작 상태 플래그
 
         /// <param name="view">Presenter와 연결될 View 객체 (Form1)</param>
-        public MainPresenter(IMainView view)
+        
+        public MainPresenter(IMainView view, string onnxPath)
         {
             _view = view;
+            _model = new PcbModel(onnxPath);
 
             // View에서 발생하는 이벤트를 Presenter의 메서드와 연결(이벤트 구독)
             // 이제 View에서 StartStopClicked 이벤트가 발생하면, OnStartStopClicked 메서드가 자동으로 호출됩니다.
@@ -85,8 +90,20 @@ namespace PCBVison.Presenters
                         // 2. Mat 형식의 프레임을 Bitmap 형식으로 변환 (using으로 메모리 관리)
                         using (var image = BitmapConverter.ToBitmap(_frame))
                         {
+                            var results = _model.Predict(_frame);
+                            foreach (var r in results)
+                            {
+                                Cv2.Rectangle(_frame, r.Rect, Scalar.Red, 2);
+                                Cv2.PutText(_frame, $"{r.Label} {r.Confidence:F2}",
+                                    new OpenCvSharp.Point(r.Rect.X, r.Rect.Y - 5),
+                                    HersheyFonts.HersheySimplex, 0.5, Scalar.Blue, 1);
+                            }
                             // 3. View에게 "이 이미지를 화면에 표시해줘" 라고 지시 (Presenter에서 복제)
-                            _view.ImageViewerImage = (Bitmap)image.Clone();
+                            using (var bitmap = BitmapConverter.ToBitmap(_frame))
+                            {
+                                _view.ImageViewerImage = (Bitmap)image.Clone();
+                            }
+                       
                         }
                     }
                     Thread.Sleep(30);

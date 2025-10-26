@@ -60,3 +60,6 @@ C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\Debug\PCBVison.csproj.Up
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\Debug\PCBVison.exe
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\Debug\PCBVison.pdb
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\Debug\PCBVison.exe.config
+C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\bin\Debug\onnxruntime.dll
+C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\bin\Debug\Microsoft.ML.OnnxRuntime.dll
+C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\bin\Debug\Microsoft.ML.OnnxRuntime.pdb
