@@ -34,6 +34,8 @@ namespace PCBVison
 
             // 3. Form의 Closing 이벤트를 IMainView의 이벤트에 연결합니다.
             base.FormClosing += (sender, e) => FormClosing?.Invoke(sender, e);
+
+            this.Load += Form1_Fillter;
         }
 
         /// <summary>
@@ -77,6 +79,22 @@ namespace PCBVison
 
         }
 
+        private void Form1_Fillter(object sender, EventArgs e)
+        {
+            filterController.Items.Add("White Balance");
+            filterController.Items.Add("Gaussian Filter");
+            filterController.Items.Add("Median Filter");
+
+            // 체크 상태 변경 시 Presenter로 전달
+            filterController.ItemCheck += (s, ev) =>
+            {
+                _presenter.OnFilterChanged(
+                    filterController.Items[ev.Index].ToString(),
+                    ev.NewValue == CheckState.Checked
+                );
+            };
+        }
+
         /// Presenter의 지시에 따라 시작/중지 버튼의 텍스트를 변경하는 속성입니다.
         public string StartButtonText
         {
@@ -89,5 +107,6 @@ namespace PCBVison
         { 
             MessageBox.Show(message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+
     }
 }

@@ -36,12 +36,12 @@
             this.terminal = new System.Windows.Forms.Label();
             this.filterLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.filterControllerBox = new System.Windows.Forms.GroupBox();
-            this.checkedListBox2 = new System.Windows.Forms.CheckedListBox();
+            this.filterController = new System.Windows.Forms.CheckedListBox();
             this.whiteBalnceGain = new System.Windows.Forms.GroupBox();
             this.wbTrackBar = new System.Windows.Forms.TrackBar();
             this.numWb = new System.Windows.Forms.NumericUpDown();
             this.lblWb = new System.Windows.Forms.Label();
-            this.RedTrackBar = new System.Windows.Forms.TrackBar();
+            this.redTrackBar = new System.Windows.Forms.TrackBar();
             this.numRed = new System.Windows.Forms.NumericUpDown();
             this.lblWhiteRed = new System.Windows.Forms.Label();
             this.greenTrackBar = new System.Windows.Forms.TrackBar();
@@ -62,6 +62,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
             this.printDocument1 = new System.Drawing.Printing.PrintDocument();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.tableLayoutPanel1.SuspendLayout();
             this.uiLayoutPanel.SuspendLayout();
             this.viwerLayoutPanel.SuspendLayout();
@@ -71,7 +72,7 @@
             this.whiteBalnceGain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.wbTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWb)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.RedTrackBar)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.redTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numRed)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.greenTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numGreen)).BeginInit();
@@ -103,7 +104,7 @@
             this.uiLayoutPanel.ColumnCount = 3;
             this.uiLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 77.60911F));
             this.uiLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.39089F));
-            this.uiLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 218F));
+            this.uiLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 220F));
             this.uiLayoutPanel.Controls.Add(this.viwerLayoutPanel, 0, 0);
             this.uiLayoutPanel.Controls.Add(this.filterLayoutPanel, 1, 0);
             this.uiLayoutPanel.Controls.Add(this.tableLayoutPanel2, 2, 0);
@@ -134,7 +135,7 @@
             this.viwerLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.viwerLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.viwerLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.viwerLayoutPanel.Size = new System.Drawing.Size(822, 737);
+            this.viwerLayoutPanel.Size = new System.Drawing.Size(821, 737);
             this.viwerLayoutPanel.TabIndex = 0;
             // 
             // imageViewer
@@ -143,7 +144,7 @@
             this.imageViewer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.imageViewer.Location = new System.Drawing.Point(3, 3);
             this.imageViewer.Name = "imageViewer";
-            this.imageViewer.Size = new System.Drawing.Size(816, 440);
+            this.imageViewer.Size = new System.Drawing.Size(815, 440);
             this.imageViewer.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.imageViewer.TabIndex = 0;
             this.imageViewer.TabStop = false;
@@ -159,7 +160,7 @@
             this.terminalLog.Margin = new System.Windows.Forms.Padding(3, 3, 3, 10);
             this.terminalLog.Name = "terminalLog";
             this.terminalLog.ReadOnly = true;
-            this.terminalLog.Size = new System.Drawing.Size(816, 233);
+            this.terminalLog.Size = new System.Drawing.Size(815, 233);
             this.terminalLog.TabIndex = 1;
             this.terminalLog.Text = "";
             // 
@@ -171,7 +172,7 @@
             this.terminal.Location = new System.Drawing.Point(3, 456);
             this.terminal.Margin = new System.Windows.Forms.Padding(3, 0, 0, 5);
             this.terminal.Name = "terminal";
-            this.terminal.Size = new System.Drawing.Size(819, 30);
+            this.terminal.Size = new System.Drawing.Size(818, 30);
             this.terminal.TabIndex = 2;
             this.terminal.Text = "Terminal Log";
             // 
@@ -181,17 +182,17 @@
             this.filterLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 285F));
             this.filterLayoutPanel.Controls.Add(this.filterControllerBox, 0, 0);
             this.filterLayoutPanel.Controls.Add(this.whiteBalnceGain, 0, 1);
-            this.filterLayoutPanel.Location = new System.Drawing.Point(831, 3);
+            this.filterLayoutPanel.Location = new System.Drawing.Point(830, 3);
             this.filterLayoutPanel.Name = "filterLayoutPanel";
             this.filterLayoutPanel.RowCount = 2;
             this.filterLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 44.56693F));
             this.filterLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 55.43307F));
-            this.filterLayoutPanel.Size = new System.Drawing.Size(233, 737);
+            this.filterLayoutPanel.Size = new System.Drawing.Size(232, 737);
             this.filterLayoutPanel.TabIndex = 1;
             // 
             // filterControllerBox
             // 
-            this.filterControllerBox.Controls.Add(this.checkedListBox2);
+            this.filterControllerBox.Controls.Add(this.filterController);
             this.filterControllerBox.Font = new System.Drawing.Font("굴림", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.filterControllerBox.Location = new System.Drawing.Point(3, 3);
             this.filterControllerBox.Name = "filterControllerBox";
@@ -200,18 +201,14 @@
             this.filterControllerBox.TabStop = false;
             this.filterControllerBox.Text = "Filter Controller";
             // 
-            // checkedListBox2
+            // filterController
             // 
-            this.checkedListBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.checkedListBox2.FormattingEnabled = true;
-            this.checkedListBox2.Items.AddRange(new object[] {
-            "White Balance",
-            "Gaussain Filter",
-            "Median Filter"});
-            this.checkedListBox2.Location = new System.Drawing.Point(3, 25);
-            this.checkedListBox2.Name = "checkedListBox2";
-            this.checkedListBox2.Size = new System.Drawing.Size(225, 294);
-            this.checkedListBox2.TabIndex = 0;
+            this.filterController.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.filterController.FormattingEnabled = true;
+            this.filterController.Location = new System.Drawing.Point(3, 25);
+            this.filterController.Name = "filterController";
+            this.filterController.Size = new System.Drawing.Size(225, 294);
+            this.filterController.TabIndex = 0;
             // 
             // whiteBalnceGain
             // 
@@ -219,7 +216,7 @@
             this.whiteBalnceGain.Controls.Add(this.wbTrackBar);
             this.whiteBalnceGain.Controls.Add(this.numWb);
             this.whiteBalnceGain.Controls.Add(this.lblWb);
-            this.whiteBalnceGain.Controls.Add(this.RedTrackBar);
+            this.whiteBalnceGain.Controls.Add(this.redTrackBar);
             this.whiteBalnceGain.Controls.Add(this.numRed);
             this.whiteBalnceGain.Controls.Add(this.lblWhiteRed);
             this.whiteBalnceGain.Controls.Add(this.greenTrackBar);
@@ -259,12 +256,12 @@
             this.lblWb.TabIndex = 9;
             this.lblWb.Text = "WB (wb_k)";
             // 
-            // RedTrackBar
+            // redTrackBar
             // 
-            this.RedTrackBar.Location = new System.Drawing.Point(17, 220);
-            this.RedTrackBar.Name = "RedTrackBar";
-            this.RedTrackBar.Size = new System.Drawing.Size(125, 45);
-            this.RedTrackBar.TabIndex = 8;
+            this.redTrackBar.Location = new System.Drawing.Point(17, 220);
+            this.redTrackBar.Name = "redTrackBar";
+            this.redTrackBar.Size = new System.Drawing.Size(125, 45);
+            this.redTrackBar.TabIndex = 8;
             // 
             // numRed
             // 
@@ -336,12 +333,12 @@
             this.tableLayoutPanel2.Controls.Add(this.inspectionBox, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.inspectionListBox, 0, 1);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(1070, 3);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(1068, 3);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 2;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 44.64043F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 55.35957F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(213, 737);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(215, 737);
             this.tableLayoutPanel2.TabIndex = 2;
             // 
             // inspectionBox
@@ -355,7 +352,7 @@
             this.inspectionBox.Font = new System.Drawing.Font("굴림", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.inspectionBox.Location = new System.Drawing.Point(3, 3);
             this.inspectionBox.Name = "inspectionBox";
-            this.inspectionBox.Size = new System.Drawing.Size(207, 322);
+            this.inspectionBox.Size = new System.Drawing.Size(209, 322);
             this.inspectionBox.TabIndex = 0;
             this.inspectionBox.TabStop = false;
             this.inspectionBox.Text = "검사율";
@@ -407,7 +404,7 @@
             this.inspectionListBox.Font = new System.Drawing.Font("굴림", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.inspectionListBox.Location = new System.Drawing.Point(3, 331);
             this.inspectionListBox.Name = "inspectionListBox";
-            this.inspectionListBox.Size = new System.Drawing.Size(207, 403);
+            this.inspectionListBox.Size = new System.Drawing.Size(209, 403);
             this.inspectionListBox.TabIndex = 1;
             this.inspectionListBox.TabStop = false;
             this.inspectionListBox.Text = "검사 결과";
@@ -419,7 +416,7 @@
             this.listBox1.ItemHeight = 19;
             this.listBox1.Location = new System.Drawing.Point(3, 25);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(201, 375);
+            this.listBox1.Size = new System.Drawing.Size(203, 375);
             this.listBox1.TabIndex = 0;
             // 
             // headerLayoutPanel
@@ -482,7 +479,7 @@
             this.whiteBalnceGain.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.wbTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWb)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.RedTrackBar)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.redTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numRed)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.greenTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numGreen)).EndInit();
@@ -515,12 +512,12 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.GroupBox inspectionBox;
         private System.Windows.Forms.GroupBox inspectionListBox;
-        private System.Windows.Forms.CheckedListBox checkedListBox2;
+        private System.Windows.Forms.CheckedListBox filterController;
         private System.Drawing.Printing.PrintDocument printDocument1;
         private System.Windows.Forms.TrackBar wbTrackBar;
         private System.Windows.Forms.NumericUpDown numWb;
         private System.Windows.Forms.Label lblWb;
-        private System.Windows.Forms.TrackBar RedTrackBar;
+        private System.Windows.Forms.TrackBar redTrackBar;
         private System.Windows.Forms.NumericUpDown numRed;
         private System.Windows.Forms.Label lblWhiteRed;
         private System.Windows.Forms.TrackBar greenTrackBar;
@@ -533,6 +530,7 @@
         private System.Windows.Forms.Label lblNormal;
         private System.Windows.Forms.Label lblDefect;
         private System.Windows.Forms.ListBox listBox1;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 }
 

@@ -18,6 +18,7 @@ namespace PCBVison.Presenters
 
         private readonly IMainView _view; // View와 통신하기 위한 인터페이스. Presenter는 이것이 Form1인지 전혀 모릅니다.
         private readonly PcbModel _model;
+        private readonly HashSet<string> _activeFilters = new HashSet<string>();
         private VideoCapture _capture;    // OpenCV 카메라 캡처 객체
         private Mat _frame;               // 카메라로부터 한 프레임을 받아올 객체
         private Thread _cameraThread;     // 실시간 영상 처리를 위한 별도의 스레드
@@ -34,6 +35,14 @@ namespace PCBVison.Presenters
             // 이제 View에서 StartStopClicked 이벤트가 발생하면, OnStartStopClicked 메서드가 자동으로 호출됩니다.
             _view.StartStopClicked += OnStartStopClicked;
             _view.FormClosing += OnFormClosing;
+        }
+
+        public void OnFilterChanged(string filterName, bool isChecked)
+        {
+            if (isChecked)
+                _activeFilters.Add(filterName);
+            else
+                _activeFilters.Remove(filterName);
         }
 
         private void OnStartStopClicked(object sender, EventArgs e)
@@ -87,6 +96,31 @@ namespace PCBVison.Presenters
                 {
                     if (_capture.Read(_frame) && !_frame.Empty())
                     {
+
+                        Mat processedFrame = _frame.Clone();
+
+                        // 필터 적용
+                        if (_activeFilters.Contains("White Balance"))
+                        {
+                            var bgr = _frame.Split();
+                            bgr[2] *= 1.5;
+
+                            Cv2.Merge(bgr, _frame);
+
+                            foreach (var c in bgr) c.Dispose();
+
+                        }
+
+                        if (_activeFilters.Contains("Gaussian Filter"))
+                        {
+                            Cv2.GaussianBlur(processedFrame, processedFrame, new OpenCvSharp.Size(5, 5), 0);
+                        }
+
+                        if (_activeFilters.Contains("Median Filter"))
+                        {
+                            Cv2.MedianBlur(processedFrame, processedFrame, 5);
+                        }
+
                         // 1. 모델 추론 실행
                         var results = _model.Predict(_frame);
 
@@ -103,7 +137,7 @@ namespace PCBVison.Presenters
                             Cv2.Rectangle(_frame, r.Rect, boxColor, 2);
                             Cv2.PutText(_frame, $"{r.Label} {r.Confidence:F2}",
                                 new OpenCvSharp.Point(r.Rect.X, r.Rect.Y - 5),
-                                HersheyFonts.HersheySimplex, 0.5, Scalar.Blue, 1);
+                                HersheyFonts.HersheySimplex, 0.5, boxColor, 1);
                         }
 
                         // 3. 결과가 그려진 프레임을 Bitmap으로 변환하여 View에 전달
