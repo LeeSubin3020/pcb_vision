@@ -27,7 +27,9 @@ namespace PCBVison.Models
             Scalar.Brown, Scalar.Lime
         };
 
-        private const float confidenceThreshold = 0.02f; // 신뢰도 임계값(지정값 이상일때만 객체로 인식)
+        public Scalar[] Colors => colors;
+
+        private const float confidenceThreshold = 0.01f; // 신뢰도 임계값(지정값 이상일때만 객체로 인식)
         private const float nmsThreshold = 0.1f;  // NMS 임계값 (이 값 이상 겹치는 박스는 하나로 합침)
 
         public PcbModel(string modelPath)

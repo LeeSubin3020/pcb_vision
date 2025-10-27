@@ -97,8 +97,10 @@ namespace PCBVison.Presenters
                             // 디버깅 로그
                             _view.Log($"Found: {r.Label} at ({r.Rect.X},{r.Rect.Y},{r.Rect.Width},{r.Rect.Height}) Conf: {r.Confidence:F2}");
 
+                            Scalar boxColor = _model.Colors[r.LabelIndex % _model.Colors.Length];
+
                             // 화면에 그리기
-                            Cv2.Rectangle(_frame, r.Rect, Scalar.Red, 2);
+                            Cv2.Rectangle(_frame, r.Rect, boxColor, 2);
                             Cv2.PutText(_frame, $"{r.Label} {r.Confidence:F2}",
                                 new OpenCvSharp.Point(r.Rect.X, r.Rect.Y - 5),
                                 HersheyFonts.HersheySimplex, 0.5, Scalar.Blue, 1);
