@@ -27,8 +27,8 @@ namespace PCBVison.Models
             Scalar.Brown, Scalar.Lime
         };
 
-        private const float confidenceThreshold = 0.05f; // 신뢰도 임계값(지정값 이상일때만 객체로 인식)
-        private const float nmsThreshold = 0.4f;  // NMS 임계값 (이 값 이상 겹치는 박스는 하나로 합침)
+        private const float confidenceThreshold = 0.02f; // 신뢰도 임계값(지정값 이상일때만 객체로 인식)
+        private const float nmsThreshold = 0.1f;  // NMS 임계값 (이 값 이상 겹치는 박스는 하나로 합침)
 
         public PcbModel(string modelPath)
         {
@@ -42,18 +42,14 @@ namespace PCBVison.Models
             int originalWidth = frame.Width;
             int originalHeight = frame.Height;
 
-            float xFactor = originalWidth / 640f;
-            float yFactor = originalHeight / 640f;
-
-            // 이미지 전처리
+            // ==========================
+            // 1️⃣ 이미지 전처리
+            // ==========================
             Mat resized = new Mat();
             Cv2.Resize(frame, resized, new OpenCvSharp.Size(640, 640));
 
-            // Ensure the image is 3 channels (BGR) before further processing
             if (resized.Channels() == 1)
-            {
                 Cv2.CvtColor(resized, resized, ColorConversionCodes.GRAY2BGR);
-            }
 
             Cv2.CvtColor(resized, resized, ColorConversionCodes.BGR2RGB);
 
@@ -70,29 +66,31 @@ namespace PCBVison.Models
             using (var output = session.Run(inputs))
             {
                 var outputTensor = output.First().AsTensor<float>();
+                var dims = outputTensor.Dimensions.ToArray(); // [1, 13, 8400] 예상
 
-                // The output of YOLOv8 is often [1, 8400, 84]
-                // where 8400 is the number of detections, and 84 is [x, y, w, h, class_0, ..., class_79]
-                const int numProposals = 8400;
+                int numChannels = dims[1];  // 13
+                int numProposals = dims[2]; // 8400
+                int numClasses = numChannels - 6; // 9개 클래스
 
                 List<Rect> boxes = new List<Rect>();
                 List<float> confidences = new List<float>();
                 List<int> classIds = new List<int>();
 
+                // ==========================
+                // 2️⃣ 각 detection 후보 처리
+                // ==========================
                 for (int i = 0; i < numProposals; i++)
                 {
+                    // 올바른 축 접근 순서 [0, channel, proposal]
                     float x = outputTensor[0, 0, i];
                     float y = outputTensor[0, 1, i];
                     float w = outputTensor[0, 2, i];
                     float h = outputTensor[0, 3, i];
-                    float objectConfidence = outputTensor[0, 4, i];
+                    float objConf = outputTensor[0, 4, i];
 
                     // 클래스 확률 중 최대값 찾기
                     float maxProb = 0f;
                     int clsId = -1;
-
-
-                    int numClasses = outputTensor.Dimensions[1] - 5;
                     for (int c = 0; c < numClasses; c++)
                     {
                         float classProb = outputTensor[0, 5 + c, i];
@@ -103,25 +101,29 @@ namespace PCBVison.Models
                         }
                     }
 
-                    float confidence = objectConfidence * maxProb;
+                    float confidence = objConf * maxProb;
+                    if (confidence < confidenceThreshold || clsId < 0) continue;
 
-                    if (confidence > confidenceThreshold)
-                    {
-                        int left = (int)((x - w / 2) * 640);  // 640 = resized width
-                        int top = (int)((y - h / 2) * 640);
-                        int width = (int)(w * 640);
-                        int height = (int)(h * 640);
+                    int left = (int)(x - w / 2);
+                    int top = (int)(y - h / 2);
+                    int width = (int)w;
+                    int height = (int)h;
 
-                        Console.WriteLine($"Box {i}: left={left}, top={top}, w={width}, h={height}, conf={confidence:F3}");
+                    // 좌표 클램핑
+                    left = Math.Max(0, Math.Min(left, originalWidth - 1));
+                    top = Math.Max(0, Math.Min(top, originalHeight - 1));
+                    width = Math.Max(1, Math.Min(width, originalWidth - left));
+                    height = Math.Max(1, Math.Min(height, originalHeight - top));
 
-                        boxes.Add(new Rect(left, top, width, height));
-                        confidences.Add(confidence);
-                        classIds.Add(clsId);
-                    }
-
+                    boxes.Add(new Rect(left, top, width, height));
+                    confidences.Add(confidence);
+                    classIds.Add(clsId);
+                    
                 }
 
-
+                // ==========================
+                // 3️⃣ NMS (중복 박스 제거)
+                // ==========================
                 if (boxes.Count > 0)
                 {
                     int[] indices;
@@ -130,23 +132,21 @@ namespace PCBVison.Models
                     foreach (int idxNms in indices)
                     {
                         int clsIndex = classIds[idxNms];
-                        if (clsIndex >= 0 && clsIndex < labels.Length)
+                        results.Add(new DetectionResult
                         {
-                            results.Add(new DetectionResult
-                            {
                                 Rect = boxes[idxNms],
                                 Label = labels[clsIndex],
                                 Confidence = confidences[idxNms],
                                 LabelIndex = clsIndex
-                            });
-                        }
+                         });
+                        
                     }
                 }
             }
 
-
             return results;
         }
+
     }
 
     public class DetectionResult
@@ -154,7 +154,6 @@ namespace PCBVison.Models
         public Rect Rect { get; set; }
         public string Label { get; set; }
         public float Confidence { get; set; }
-
         public int LabelIndex { get; set; }
     }
 }

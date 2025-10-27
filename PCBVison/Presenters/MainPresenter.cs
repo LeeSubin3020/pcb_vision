@@ -93,9 +93,11 @@ namespace PCBVison.Presenters
                         // 2. 추론 결과를 원본 프레임(_frame)에 그리기
                         foreach (var r in results)
                         {
-                            // 디버깅을 위해 감지된 객체의 좌표를 로그로 출력
-                            _view.Log($"Found: {r.Label} at {r.Rect}");
 
+                            // 디버깅 로그
+                            _view.Log($"Found: {r.Label} at ({r.Rect.X},{r.Rect.Y},{r.Rect.Width},{r.Rect.Height}) Conf: {r.Confidence:F2}");
+
+                            // 화면에 그리기
                             Cv2.Rectangle(_frame, r.Rect, Scalar.Red, 2);
                             Cv2.PutText(_frame, $"{r.Label} {r.Confidence:F2}",
                                 new OpenCvSharp.Point(r.Rect.X, r.Rect.Y - 5),
