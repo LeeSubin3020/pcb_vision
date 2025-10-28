@@ -6,6 +6,7 @@ using OpenCvSharp.XImgProc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Management;
 using System.Windows.Forms;
 
 namespace PCBVison.Models
@@ -120,7 +121,7 @@ namespace PCBVison.Models
                     boxes.Add(new Rect(left, top, width, height));
                     confidences.Add(confidence);
                     classIds.Add(clsId);
-                    
+
                 }
 
                 // ==========================
@@ -136,12 +137,12 @@ namespace PCBVison.Models
                         int clsIndex = classIds[idxNms];
                         results.Add(new DetectionResult
                         {
-                                Rect = boxes[idxNms],
-                                Label = labels[clsIndex],
-                                Confidence = confidences[idxNms],
-                                LabelIndex = clsIndex
-                         });
-                        
+                            Rect = boxes[idxNms],
+                            Label = labels[clsIndex],
+                            Confidence = confidences[idxNms],
+                            LabelIndex = clsIndex
+                        });
+
                     }
                 }
             }
@@ -149,14 +150,34 @@ namespace PCBVison.Models
             return results;
         }
 
-    }
 
-    public class DetectionResult
-    {
-        public Rect Rect { get; set; }
-        public string Label { get; set; }
-        public float Confidence { get; set; }
-        public int LabelIndex { get; set; }
+
+        public InspectionResult AnalyzeResults(List<DetectionResult> results)
+        {
+            var result = new InspectionResult();
+
+            result.Total = results.Count;
+            result.Pass = results.Count(r => r.Confidence > 0.02f);
+            result.Fail = result.Total - result.Pass;
+
+            return result;
+        }
+
+        public class DetectionResult
+        {
+            public Rect Rect { get; set; }
+            public string Label { get; set; }
+            public float Confidence { get; set; }
+            public int LabelIndex { get; set; }
+        }
+
+        // 검사율
+        public class InspectionResult
+        {
+            public int Total { get; set; }
+            public int Pass { get; set; }
+            public int Fail { get; set; }
+        }
     }
 }
 

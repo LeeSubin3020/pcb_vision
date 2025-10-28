@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Drawing;
+using System.Runtime.Remoting.Channels;
 using System.Windows.Forms;
+using OpenCvSharp.Internal.Vectors;
 using PCBVison.Presenters;
 using PCBVison.Views;
 
 namespace PCBVison
 {
-    /// UI를 담당하는 View (서빙 직원) 클래스입니다.
     /// IMainView 인터페이스(계약서)를 구현하며, 실제 로직은 모두 Presenter에게 위임합니다.
     public partial class Form1 : Form, IMainView
     {
         private readonly MainPresenter _presenter; // 실제 동작을 담당할 Presenter 객체
+        private double blueGain = 1.0;
+        private double greenGain = 1.0;
+        private double redGain = 1.0;
+        private double wbGain = 1.0;
 
         // IMainView 인터페이스에 정의된 이벤트들을 선언합니다.
         // 이 이벤트들은 Presenter가 구독하게 됩니다.
@@ -21,10 +26,6 @@ namespace PCBVison
         public Form1()
         {
             InitializeComponent();
-
-
-            // 1. 자신의 파트너인 MainPresenter를 생성합니다. 
-            //    이때, this(Form1 자기 자신)를 넘겨주어 Presenter가 자신을 제어할 수 있도록 합니다.
             string onnxPath = @"C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\best.onnx";
             _presenter = new MainPresenter(this, onnxPath);
 
@@ -36,11 +37,95 @@ namespace PCBVison
             base.FormClosing += (sender, e) => FormClosing?.Invoke(sender, e);
 
             this.Load += Form1_Fillter;
+
+            // TrackBar 범위(0.5배 ~ 2배)
+            blueTrackBar.Minimum = 50;
+            blueTrackBar.Maximum = 200;
+            greenTrackBar.Minimum = 50;
+            greenTrackBar.Maximum = 200;
+            redTrackBar.Minimum = 50;
+            redTrackBar.Maximum = 200;
+            wbTrackBar.Minimum = 50;
+            wbTrackBar.Maximum = 200;
+
+            numBlue.DecimalPlaces = 2;
+            numBlue.Increment = 0.01M;
+            numBlue.Minimum = 0.5M;
+            numBlue.Maximum = 2.0M;
+            numBlue.Value = 1.0M;
+
+            numGreen.DecimalPlaces = 2;
+            numGreen.Increment = 0.01M;
+            numGreen.Minimum = 0.5M;
+            numGreen.Maximum = 2.0M;
+            numGreen.Value = 1.0M;
+
+            numRed.DecimalPlaces = 2;
+            numRed.Increment = 0.01M;
+            numRed.Minimum = 0.5M;
+            numRed.Maximum = 2.0M;
+            numRed.Value = 1.0M;
+
+            numWb.DecimalPlaces = 2;
+            numWb.Increment = 0.01M;
+            numWb.Minimum = 0.5M;
+            numWb.Maximum = 2.0M;
+            numWb.Value = 1.0M;
+
+
+            // 초기값
+            blueTrackBar.Value = greenTrackBar.Value = redTrackBar.Value = wbTrackBar.Value = 100;
+            numBlue.Value = numGreen.Value = numRed.Value = numWb.Value = 1.0M;
+
+            // TrackBar <-> NumericUpDown 연동
+            blueTrackBar.Scroll += (sender, e) => SyncTrackAndNum(blueTrackBar, numBlue);
+            greenTrackBar.Scroll += (sender, e) => SyncTrackAndNum(greenTrackBar, numGreen);
+            redTrackBar.Scroll += (sender, e) => SyncTrackAndNum(redTrackBar, numRed);
+            wbTrackBar.Scroll += (sender, e) => SyncTrackAndNum(wbTrackBar, numWb);
+
+            numBlue.ValueChanged += (sender, e) => SyncNumAndTrack(numBlue, blueTrackBar);
+            numGreen.ValueChanged += (sender, e) => SyncNumAndTrack(numGreen, greenTrackBar);
+            numRed.ValueChanged += (sender, e) => SyncNumAndTrack(numRed, redTrackBar);
+            numWb.ValueChanged += (sender, e) => SyncNumAndTrack(numWb, wbTrackBar);
+
         }
 
-        /// <summary>
+        private void SyncTrackAndNum(TrackBar tb, NumericUpDown num)
+        {
+            decimal val = (decimal)tb.Value / 100M;
+            if (num.Value != val)
+                num.Value = val;
+
+            UpdateColorGains();
+        }
+
+        private void SyncNumAndTrack(NumericUpDown num, TrackBar tb)
+        {
+            int val = (int)(num.Value * 100);
+
+            // TrackBar의 범위(50~200) 안으로 강제 보정
+            val = Math.Max(tb.Minimum, Math.Min(tb.Maximum, val));
+
+            if (tb.Value != val)
+                tb.Value = val;
+
+            UpdateColorGains(); 
+            
+        }
+
+        private void UpdateColorGains()
+        {
+            blueGain = (double)numBlue.Value;
+            greenGain = (double)numGreen.Value;
+            redGain = (double)numRed.Value;
+            wbGain = (double)numWb.Value;
+        }
+        public double BlueGain => blueGain;
+        public double GreenGain => greenGain;
+        public double RedGain => redGain;
+        public double WbGain => wbGain;
+
         /// Presenter가 전달해준 이미지를 화면에 표시하는 속성입니다.
-        /// </summary>
         public Image ImageViewerImage
         {
             get { return imageViewer.Image; }
@@ -108,5 +193,37 @@ namespace PCBVison
             MessageBox.Show(message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
+        public int TotalCount
+        {
+            set
+            {
+                if (lblTotal.InvokeRequired)
+                    lblTotal.Invoke(new Action(() => lblTotal.Text = $"총 검사: {value}"));
+                else
+                    lblTotal.Text = $"총 검사: {value}";
+            }
+        }
+
+        public int PassCount
+        {
+            set
+            {
+                if (lblPass.InvokeRequired)
+                    lblPass.Invoke(new Action(() => lblPass.Text = $"정상: {value}"));
+                else
+                    lblPass.Text = $"정상: {value}";
+            }
+        }
+
+        public int FailCount
+        {
+            set
+            {
+                if (lblFail.InvokeRequired)
+                    lblFail.Invoke(new Action(() => lblFail.Text = $"불량: {value}"));
+                else
+                    lblFail.Text = $"불량: {value}";
+            }
+        }
     }
 }

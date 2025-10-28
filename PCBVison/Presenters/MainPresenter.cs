@@ -1,11 +1,14 @@
-using System;
-using System.Drawing;
-using System.Collections.Generic;
-using System.Threading;
-using PCBVison.Views;
-using PCBVison.Models;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using PCBVison.Models;
+using PCBVison.Views;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
+using System.Drawing;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace PCBVison.Presenters
 {
@@ -23,9 +26,13 @@ namespace PCBVison.Presenters
         private Mat _frame;               // 카메라로부터 한 프레임을 받아올 객체
         private Thread _cameraThread;     // 실시간 영상 처리를 위한 별도의 스레드
         private bool _isRunning;          // 카메라 동작 상태 플래그
+        private int _totalCount = 0;
+        private int _passCount = 0;
+        private int _failCount = 0;
+
 
         /// <param name="view">Presenter와 연결될 View 객체 (Form1)</param>
-        
+
         public MainPresenter(IMainView view, string onnxPath)
         {
             _view = view;
@@ -50,7 +57,7 @@ namespace PCBVison.Presenters
             if (!_isRunning) // 카메라가 꺼져있을 경우
             {
                 // 1. 카메라 장치 열기
-                _capture = new VideoCapture(0);
+                _capture = new VideoCapture(0, VideoCaptureAPIs.DSHOW);
                 if (!_capture.IsOpened())
                 {
                     // 2. 카메라 열기 실패 시, View에게 오류 메시지 표시를 지시
@@ -58,6 +65,13 @@ namespace PCBVison.Presenters
                     _capture?.Dispose(); // 수정: Release() 대신 Dispose() 사용
                     return;
                 }
+
+                //if (!_capture.Read(_frame) || _frame.Empty())
+                //{
+                //    _view.ShowError("프레임 읽기 실패");
+                //    _capture?.Dispose(); // 수정: Release() 대신 Dispose() 사용
+                //}
+
 
                 // 3. 변수 및 스레드 초기화 후, 영상 처리 스레드 시작
                 _frame = new Mat();
@@ -102,12 +116,24 @@ namespace PCBVison.Presenters
                         // 필터 적용
                         if (_activeFilters.Contains("White Balance"))
                         {
-                            var bgr = _frame.Split();
-                            bgr[2] *= 1.5;
+                            double blueGain = _view.BlueGain;
+                            double greenGain = _view.GreenGain;
+                            double redGain = _view.RedGain;
+                            double wbGain = _view.WbGain;
 
+                            // BGR 채널 분리
+                            var bgr = _frame.Split();
+
+                            // 각각의 채널에 Gain 적용
+                            bgr[0] *= blueGain * wbGain;
+                            bgr[1] *= greenGain * wbGain;
+                            bgr[2] *= redGain * wbGain;
+
+                            // 병합해서 프레임 업데이트
                             Cv2.Merge(bgr, _frame);
 
-                            foreach (var c in bgr) c.Dispose();
+                            foreach (var c in bgr) 
+                                c.Dispose();
 
                         }
 
@@ -124,7 +150,25 @@ namespace PCBVison.Presenters
                         // 1. 모델 추론 실행
                         var results = _model.Predict(_frame);
 
-                        // 2. 추론 결과를 원본 프레임(_frame)에 그리기
+                        if (results.Count > 0)
+                        {
+                            _totalCount++;
+
+                            // 하나라도 Confidence 낮으면 불량 처리
+                            bool isFail = results.Any(r => r.Confidence < 0.02f);
+                            if (isFail)
+                                _failCount++;
+                            else
+                                _passCount++;
+                        }
+
+                        // 2. 검출 결과를 분석 (검사율 계산)
+                        var inspection = _model.AnalyzeResults(results);
+                        _view.TotalCount = inspection.Total;
+                        _view.PassCount = inspection.Pass;
+                        _view.FailCount = inspection.Fail;
+
+                        //추론 결과를 원본 프레임(_frame)에 그리기
                         foreach (var r in results)
                         {
 

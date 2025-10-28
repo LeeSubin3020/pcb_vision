@@ -1,3 +1,8 @@
+C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.csproj.AssemblyReference.cache
+C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.Properties.Resources.resources
+C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.Form1.resources
+C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.csproj.GenerateResource.cache
+C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.csproj.CoreCompileInputs.cache
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\bin\x64\Debug\dll\x86\OpenCvSharpExtern.dll
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\bin\x64\Debug\dll\x86\opencv_videoio_ffmpeg4110.dll
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\bin\x64\Debug\dll\x64\OpenCvSharpExtern.dll
@@ -24,11 +29,6 @@ C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\bin\x64\Debug\System.Drawing
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\bin\x64\Debug\System.Memory.xml
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\bin\x64\Debug\System.Numerics.Vectors.xml
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\bin\x64\Debug\System.Runtime.CompilerServices.Unsafe.xml
-C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.csproj.AssemblyReference.cache
-C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.Properties.Resources.resources
-C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.Form1.resources
-C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.csproj.GenerateResource.cache
-C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.csproj.CoreCompileInputs.cache
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.csproj.Up2Date
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.exe
 C:\Users\subin\Documents\GitHub\pcb_vision\PCBVison\obj\x64\Debug\PCBVison.pdb

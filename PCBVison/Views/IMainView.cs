@@ -27,7 +27,6 @@ namespace PCBVison.Views
         Image ImageViewerImage { get; set; }
 
         /// 시작/중지 버튼의 텍스트(예: "검사 시작", "검사 중지")를 제어하기 위한 속성입니다.
-        /// Presenter가 상태에 따라 이 속성의 값을 변경하면, View는 버튼의 텍스트를 바꿔야 합니다.
         string StartButtonText { get; set; }
 
 
@@ -37,6 +36,20 @@ namespace PCBVison.Views
         void ShowError(string message);
         void Log(string message);
 
+        // White Balnce Gain 속성 값
+        double BlueGain { get; }
+        double GreenGain { get; }
+        double RedGain { get; }
+        double WbGain { get; }
+
+        // 검사율
+        int TotalCount { set; }
+        int PassCount { set; }
+        int FailCount { set; }
+
     }
+
 }
+
+
 
