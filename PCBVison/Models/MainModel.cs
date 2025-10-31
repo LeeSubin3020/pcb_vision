@@ -17,15 +17,13 @@ namespace PCBVison.Models
 
         private readonly string[] labels = new string[]
         {
-            "Audio Port", "Camera Port", "Display", "GPIO", "Hdmi Port",
-            "LAN Port", "MCU Chip", "USB Port", "charging Port"
+            "A1", "AMS-1117", "CH340G", "S4"
         };
 
         private readonly Scalar[] colors = new Scalar[]
         {
             Scalar.Red, Scalar.Blue, Scalar.Green, Scalar.Yellow,
-            Scalar.Cyan, Scalar.Magenta, Scalar.Orange, Scalar.Pink,
-            Scalar.Brown, Scalar.Lime
+            Scalar.Cyan
         };
 
         public Scalar[] Colors => colors;
@@ -73,7 +71,7 @@ namespace PCBVison.Models
 
                 int numChannels = dims[1];  // 13
                 int numProposals = dims[2]; // 8400
-                int numClasses = numChannels - 6; // 9개 클래스
+                int numClasses = numChannels - 5; // 9개 클래스
 
                 List<Rect> boxes = new List<Rect>();
                 List<float> confidences = new List<float>();
