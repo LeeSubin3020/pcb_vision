@@ -1,0 +1,126 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\PCB_Vision.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\PCB_Vision.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\PCB_Vision.csproj",
+        "projectName": "PCB_Vision",
+        "projectPath": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\PCB_Vision.csproj",
+        "packagesPath": "C:\\Users\\subin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\subin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0-windows"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0-windows7.0": {
+            "targetAlias": "net8.0-windows",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net8.0-windows7.0": {
+          "targetAlias": "net8.0-windows",
+          "dependencies": {
+            "Microsoft.AI.DirectML": {
+              "target": "Package",
+              "version": "[1.15.4, )"
+            },
+            "Microsoft.ML.OnnxRuntime": {
+              "target": "Package",
+              "version": "[1.23.0, )"
+            },
+            "Microsoft.ML.OnnxRuntime.DirectML": {
+              "target": "Package",
+              "version": "[1.23.0, )"
+            },
+            "Microsoft.ML.OnnxRuntime.Managed": {
+              "target": "Package",
+              "version": "[1.23.0, )"
+            },
+            "OpenCvSharp4": {
+              "target": "Package",
+              "version": "[4.11.0.20250507, )"
+            },
+            "OpenCvSharp4.Extensions": {
+              "target": "Package",
+              "version": "[4.11.0.20250507, )"
+            },
+            "OpenCvSharp4.runtime.win": {
+              "target": "Package",
+              "version": "[4.11.0.20250507, )"
+            },
+            "System.Buffers": {
+              "target": "Package",
+              "version": "[4.6.1, )"
+            },
+            "System.Drawing.Common": {
+              "target": "Package",
+              "version": "[9.0.10, )"
+            },
+            "System.Memory": {
+              "target": "Package",
+              "version": "[4.6.3, )"
+            },
+            "System.Numerics.Vectors": {
+              "target": "Package",
+              "version": "[4.6.1, )"
+            },
+            "System.Runtime.CompilerServices.Unsafe": {
+              "target": "Package",
+              "version": "[6.1.2, )"
+            },
+            "System.ValueTuple": {
+              "target": "Package",
+              "version": "[4.6.1, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            },
+            "Microsoft.WindowsDesktop.App.WindowsForms": {
+              "privateAssets": "none"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

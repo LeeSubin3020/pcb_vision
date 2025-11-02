@@ -3,28 +3,32 @@
   "WorkspaceRootPath": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\pcbvison\\presenters\\mainpresenter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|solutionrelative:pcbvison\\presenters\\mainpresenter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|c:\\users\\subin\\documents\\github\\pcb_vision\\pcbvison\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|solutionrelative:pcbvison\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\pcbvison\\models\\mainmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|solutionrelative:pcbvison\\models\\mainmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\pcbvison\\views\\imainview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|solutionrelative:pcbvison\\views\\imainview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|c:\\users\\subin\\documents\\github\\pcb_vision\\pcbvison\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\pcbvison\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|solutionrelative:pcbvison\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\pcbvison\\views\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|solutionrelative:pcbvison\\views\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\pcbvison\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|solutionrelative:pcbvison\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\pcbvison\\views\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|solutionrelative:pcbvison\\views\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\pcbvison\\models\\mainmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|solutionrelative:pcbvison\\models\\mainmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\pcbvison\\presenters\\mainpresenter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|solutionrelative:pcbvison\\presenters\\mainpresenter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\pcbvison\\views\\imainview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{138BD056-872E-44FC-B5B2-D721D7147841}|PCBVison\\PCBVison.csproj|solutionrelative:pcbvison\\views\\imainview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,17 +38,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
               "Title": "Form1.cs",
               "DocumentMoniker": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\Views\\Form1.cs",
               "RelativeDocumentMoniker": "PCBVison\\Views\\Form1.cs",
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\Views\\Form1.cs",
               "RelativeToolTip": "PCBVison\\Views\\Form1.cs",
-              "ViewState": "AgIAAMEAAAAAAAAAAADwv9cAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAANcAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-22T08:11:39.332Z",
               "IsPinned": true,
@@ -52,7 +56,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 0,
+              "Title": "App.config",
+              "DocumentMoniker": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\App.config",
+              "RelativeDocumentMoniker": "PCBVison\\App.config",
+              "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\App.config",
+              "RelativeToolTip": "PCBVison\\App.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2025-11-02T00:38:37.569Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "Form1.Designer.cs",
               "DocumentMoniker": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\Views\\Form1.Designer.cs",
               "RelativeDocumentMoniker": "PCBVison\\Views\\Form1.Designer.cs",
@@ -65,46 +82,46 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "MainModel.cs",
               "DocumentMoniker": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\Models\\MainModel.cs",
               "RelativeDocumentMoniker": "PCBVison\\Models\\MainModel.cs",
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\Models\\MainModel.cs",
               "RelativeToolTip": "PCBVison\\Models\\MainModel.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAowE4AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAMwCUAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-25T08:12:30.759Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 6,
               "Title": "IMainView.cs",
               "DocumentMoniker": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\Views\\IMainView.cs",
               "RelativeDocumentMoniker": "PCBVison\\Views\\IMainView.cs",
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\Views\\IMainView.cs",
               "RelativeToolTip": "PCBVison\\Views\\IMainView.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC8AAAAeAAAAAAAAAA==",
+              "ViewState": "AgIAACMAAAAAAAAAAAAzwC8AAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-22T07:43:48.832Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 5,
               "Title": "MainPresenter.cs",
               "DocumentMoniker": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\Presenters\\MainPresenter.cs",
               "RelativeDocumentMoniker": "PCBVison\\Presenters\\MainPresenter.cs",
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\Presenters\\MainPresenter.cs",
               "RelativeToolTip": "PCBVison\\Presenters\\MainPresenter.cs",
-              "ViewState": "AgIAAC0AAAAAAAAAAAAswEYAAAAzAAAAAAAAAA==",
+              "ViewState": "AgIAAGoAAAAAAAAAAAAjwHsAAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-22T07:25:09.714Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "Form1.cs [\uB514\uC790\uC778]",
               "DocumentMoniker": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCBVison\\Views\\Form1.cs",
               "RelativeDocumentMoniker": "PCBVison\\Views\\Form1.cs",
