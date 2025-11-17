@@ -245,7 +245,7 @@
             // 
             // wbTrackBar
             // 
-            wbTrackBar.Location = new Point(18, 362);
+            wbTrackBar.Location = new Point(17, 274);
             wbTrackBar.Margin = new Padding(3, 4, 3, 4);
             wbTrackBar.Name = "wbTrackBar";
             wbTrackBar.Size = new Size(125, 45);
@@ -253,7 +253,7 @@
             // 
             // numWb
             // 
-            numWb.Location = new Point(149, 362);
+            numWb.Location = new Point(148, 274);
             numWb.Margin = new Padding(3, 4, 3, 4);
             numWb.Name = "numWb";
             numWb.Size = new Size(69, 29);
@@ -262,7 +262,7 @@
             // lblWb
             // 
             lblWb.AutoSize = true;
-            lblWb.Location = new Point(23, 335);
+            lblWb.Location = new Point(22, 247);
             lblWb.Name = "lblWb";
             lblWb.Size = new Size(95, 19);
             lblWb.TabIndex = 9;
@@ -270,7 +270,7 @@
             // 
             // redTrackBar
             // 
-            redTrackBar.Location = new Point(17, 275);
+            redTrackBar.Location = new Point(16, 204);
             redTrackBar.Margin = new Padding(3, 4, 3, 4);
             redTrackBar.Name = "redTrackBar";
             redTrackBar.Size = new Size(125, 45);
@@ -278,7 +278,7 @@
             // 
             // numRed
             // 
-            numRed.Location = new Point(148, 275);
+            numRed.Location = new Point(147, 204);
             numRed.Margin = new Padding(3, 4, 3, 4);
             numRed.Name = "numRed";
             numRed.Size = new Size(69, 29);
@@ -287,7 +287,7 @@
             // lblWhiteRed
             // 
             lblWhiteRed.AutoSize = true;
-            lblWhiteRed.Location = new Point(25, 248);
+            lblWhiteRed.Location = new Point(27, 177);
             lblWhiteRed.Name = "lblWhiteRed";
             lblWhiteRed.Size = new Size(73, 19);
             lblWhiteRed.TabIndex = 6;
@@ -295,7 +295,7 @@
             // 
             // greenTrackBar
             // 
-            greenTrackBar.Location = new Point(16, 186);
+            greenTrackBar.Location = new Point(16, 134);
             greenTrackBar.Margin = new Padding(3, 4, 3, 4);
             greenTrackBar.Name = "greenTrackBar";
             greenTrackBar.Size = new Size(125, 45);
@@ -303,7 +303,7 @@
             // 
             // numGreen
             // 
-            numGreen.Location = new Point(147, 186);
+            numGreen.Location = new Point(147, 134);
             numGreen.Margin = new Padding(3, 4, 3, 4);
             numGreen.Name = "numGreen";
             numGreen.Size = new Size(69, 29);
@@ -312,7 +312,7 @@
             // lblWhiteGreen
             // 
             lblWhiteGreen.AutoSize = true;
-            lblWhiteGreen.Location = new Point(21, 159);
+            lblWhiteGreen.Location = new Point(21, 107);
             lblWhiteGreen.Name = "lblWhiteGreen";
             lblWhiteGreen.Size = new Size(94, 19);
             lblWhiteGreen.TabIndex = 3;
@@ -320,7 +320,7 @@
             // 
             // blueTrackBar
             // 
-            blueTrackBar.Location = new Point(16, 90);
+            blueTrackBar.Location = new Point(16, 65);
             blueTrackBar.Margin = new Padding(3, 4, 3, 4);
             blueTrackBar.Name = "blueTrackBar";
             blueTrackBar.Size = new Size(125, 45);
@@ -328,7 +328,7 @@
             // 
             // numBlue
             // 
-            numBlue.Location = new Point(147, 90);
+            numBlue.Location = new Point(147, 65);
             numBlue.Margin = new Padding(3, 4, 3, 4);
             numBlue.Name = "numBlue";
             numBlue.Size = new Size(69, 29);
@@ -337,7 +337,7 @@
             // lblWhiteBlue
             // 
             lblWhiteBlue.AutoSize = true;
-            lblWhiteBlue.Location = new Point(21, 62);
+            lblWhiteBlue.Location = new Point(21, 37);
             lblWhiteBlue.Name = "lblWhiteBlue";
             lblWhiteBlue.Size = new Size(80, 19);
             lblWhiteBlue.TabIndex = 0;

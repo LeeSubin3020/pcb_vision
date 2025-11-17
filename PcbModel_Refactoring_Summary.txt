@@ -1,0 +1,136 @@
+PcbModel.cs 코드 리팩토링 전후 비교 (포트폴리오용)
+=========================================================
+
+이 문서는 PCB Vision 프로젝트의 핵심 로직 파일 `PcbModel.cs`에서 발생했던 문제를 진단하고, 모델의 데이터 구조에 맞게 코드를 리팩토링한 과정을 비교/설명합니다.
+
+### 문제 상황
+
+초기 코드는 4클래스 YOLOv8 모델을 사용했음에도 불구하고, ONNX 런타임의 `session.Run()` 메소드 실행 중 `Index was outside the bounds of the array` 오류를 발생시키며 프로그램이 중단되었습니다. 이는 모델이 실제로 출력하는 데이터의 구조와, C# 코드가 데이터를 해석하는 방식 사이에 근본적인 불일치가 있었기 때문입니다.
+
+---
+
+### 1. 기존 코드 (리팩토링 전)
+
+기존 코드는 **YOLOv5 스타일의 출력 형식**을 가정하고 작성되었습니다.
+
+*   **주요 문제점:**
+    1.  `obj_conf` 라는 '객체 신뢰도' 점수가 바운딩 박스 좌표 뒤에 별도로 존재한다고 가정합니다.
+    2.  클래스별 확률은 `obj_conf` 뒤에 온다고 가정합니다. (좌표 4개 + 신뢰도 1개 = 5번째 인덱스부터)
+    3.  최종 신뢰도를 `obj_conf * max_class_probability` 라는 잘못된 방식으로 계산합니다.
+
+```csharp
+// =================================================
+// 기존 코드 (YOLOv5 스타일을 잘못 가정한 로직)
+// =================================================
+
+using (var output = session.Run(inputs))
+{
+    var outputTensor = output.First().AsTensor<float>();
+    var dims = outputTensor.Dimensions.ToArray(); 
+
+    int numProposals = dims[2];
+    int numClasses = 4;
+
+    List<Rect> boxes = new List<Rect>();
+    List<float> confidences = new List<float>();
+    List<int> classIds = new List<int>();
+
+    for (int i = 0; i < numProposals; i++)
+    {
+        // --- 문제의 핵심 ---
+        // 1. objConf(객체 신뢰도)가 인덱스 4에 별도로 존재한다고 가정
+        float x = outputTensor[0, 0, i];
+        float y = outputTensor[0, 1, i];
+        float w = outputTensor[0, 2, i];
+        float h = outputTensor[0, 3, i];
+        float objConf = outputTensor[0, 4, i]; 
+
+        // 2. 클래스 확률이 인덱스 5부터 시작한다고 가정
+        float maxProb = 0f;
+        int clsId = -1;
+        for (int c = 0; c < numClasses; c++)
+        {
+            float classProb = outputTensor[0, 5 + c, i];
+            if (classProb > maxProb)
+            {
+                maxProb = classProb;
+                clsId = c;
+            }
+        }
+
+        // 3. 신뢰도를 objConf와 클래스 확률의 곱으로 잘못 계산
+        float confidence = objConf * maxProb; 
+        if (confidence < confidenceThreshold || clsId < 0) continue;
+
+        // (이하 좌표 변환 및 결과 추가 로직)
+        // ...
+    }
+    // ...
+}
+```
+
+---
+
+### 2. 수정된 코드 (리팩토링 후)
+
+수정된 코드는 **표준 YOLOv8의 출력 형식**을 정확히 해석합니다.
+
+*   **주요 해결책:**
+    1.  YOLOv8의 출력은 `[x, y, w, h, 클래스1_확률, 클래스2_확률, ...]` 형태임을 명확히 인지합니다. 별도의 `obj_conf`는 존재하지 않습니다.
+    2.  클래스별 확률이 바운딩 박스 좌표(4개) 바로 뒤, 즉 4번 인덱스부터 시작한다고 올바르게 수정합니다.
+    3.  여러 클래스 확률 값 중 가장 높은 값을 최종 신뢰도(`confidence`)로 직접 사용합니다.
+
+```csharp
+// =================================================
+// 수정된 코드 (표준 YOLOv8 스타일에 맞게 리팩토링)
+// =================================================
+
+using (var output = session.Run(inputs))
+{
+    var outputTensor = output.First().AsTensor<float>();
+    var dims = outputTensor.Dimensions.ToArray(); 
+
+    int numProposals = dims[2];
+    int numClasses = 4;
+
+    List<Rect> boxes = new List<Rect>();
+    List<float> confidences = new List<float>();
+    List<int> classIds = new List<int>();
+
+    for (int i = 0; i < numProposals; i++)
+    {
+        // --- 해결책 ---
+        // 1. 클래스 확률이 인덱스 4부터 시작함을 명시
+        float maxProb = 0f;
+        int clsId = -1;
+        for (int c = 0; c < numClasses; c++)
+        {
+            float classProb = outputTensor[0, 4 + c, i];
+            if (classProb > maxProb)
+            {
+                maxProb = classProb;
+                clsId = c;
+            }
+        }
+
+        // 2. 가장 높은 클래스 확률을 최종 신뢰도로 직접 사용
+        float confidence = maxProb;
+
+        if (confidence < confidenceThreshold) continue;
+
+        // 3. Bounding Box 좌표는 인덱스 0~3에서 정상적으로 추출
+        float x = outputTensor[0, 0, i];
+        float y = outputTensor[0, 1, i];
+        float w = outputTensor[0, 2, i];
+        float h = outputTensor[0, 3, i];
+
+        // (이하 좌표 변환 및 결과 추가 로직은 동일)
+        // ...
+    }
+    // ...
+}
+```
+
+### 결론
+
+이번 리팩토링은 단순히 코드를 수정하는 것을 넘어, **사용하는 모델(YOLOv8)의 데이터 구조를 정확히 이해하고 그에 맞게 코드를 재설계**하는 과정이었습니다. 이를 통해 ONNX 런타임과의 근본적인 충돌을 해결하고 프로그램이 안정적으로 동작하도록 만들 수 있었습니다.

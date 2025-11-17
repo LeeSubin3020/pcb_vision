@@ -28,7 +28,7 @@ namespace PCBVison
             InitializeComponent();
             if (!DesignMode)
             {
-                string onnxPath = @"C:\Users\subin\Documents\GitHub\pcb_vision\PCB_Vision\best.onnx";
+                string onnxPath = @"C:\Users\subin\Documents\GitHub\pcb_vision\PCB_Vision\yolo8s.onnx";
                 _presenter = new MainPresenter(this, onnxPath);
 
                 // 2. UI 컨트롤(startbt)의 클릭 이벤트를 IMainView의 이벤트에 연결합니다.

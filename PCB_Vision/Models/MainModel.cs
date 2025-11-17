@@ -28,14 +28,14 @@ namespace PCBVison.Models
 
         public Scalar[] Colors => colors;
 
-        private const float confidenceThreshold = 0.01f; // 신뢰도 임계값(지정값 이상일때만 객체로 인식)
-        private const float nmsThreshold = 0.1f;  // NMS 임계값 (이 값 이상 겹치는 박스는 하나로 합침)
+        private const float confidenceThreshold = 0.7f; // 신뢰도 임계값(지정값 이상일때만 객체로 인식)
+        private const float nmsThreshold = 0.2f;  // NMS 임계값 (이 값 이상 겹치는 박스는 하나로 합침)
 
         public PcbModel(string modelPath)
         {
             // ✅ DirectML GPU 사용 옵션
             var options = new SessionOptions();
-            // options.AppendExecutionProvider_DML();
+            options.AppendExecutionProvider_DML();
 
             session = new InferenceSession(modelPath, options);
         }
@@ -47,9 +47,6 @@ namespace PCBVison.Models
             int originalWidth = frame.Width;
             int originalHeight = frame.Height;
 
-            // ==========================
-            // 1️⃣ 이미지 전처리
-            // ==========================
             Mat resized = new Mat();
             Cv2.Resize(frame, resized, new OpenCvSharp.Size(896, 896));
 
@@ -71,34 +68,39 @@ namespace PCBVison.Models
             using (var output = session.Run(inputs))
             {
                 var outputTensor = output.First().AsTensor<float>();
-                var dims = outputTensor.Dimensions.ToArray(); // [1, 13, 8400] 예상
+                var dims = outputTensor.Dimensions.ToArray(); 
 
-                int numChannels = dims[1];  // 13
-                int numProposals = dims[2]; // 8400
-                int numClasses = numChannels - 5; // 9개 클래스
+                // YOLOv8 모델의 출력 형태는 [batch, channels, proposals] 입니다.
+                // 4개 클래스 모델의 경우 channels는 8 (x,y,w,h + 4 class probabilities) 입니다.
+                // dims[0] = 1 (batch size)
+                // dims[1] = 8 (channels)
+                // dims[2] = 8400 (proposals)
+                int numChannels = dims[1];
+                int numProposals = dims[2];
+                int numClasses = 4;
+
+                if (numChannels != numClasses + 4)
+                {
+                    // 만약 모델의 출력 채널 수가 예상과 다르면, 여기서 오류를 발생시키거나 로그를 남길 수 있습니다.
+                    // For now, we proceed with the assumption.
+                }
 
                 List<Rect> boxes = new List<Rect>();
                 List<float> confidences = new List<float>();
                 List<int> classIds = new List<int>();
 
                 // ==========================
-                // 2️⃣ 각 detection 후보 처리
+                // 2️⃣ 각 detection 후보 처리 (YOLOv8 형식에 맞게 수정)
                 // ==========================
                 for (int i = 0; i < numProposals; i++)
                 {
-                    // 올바른 축 접근 순서 [0, channel, proposal]
-                    float x = outputTensor[0, 0, i];
-                    float y = outputTensor[0, 1, i];
-                    float w = outputTensor[0, 2, i];
-                    float h = outputTensor[0, 3, i];
-                    float objConf = outputTensor[0, 4, i];
-
                     // 클래스 확률 중 최대값 찾기
                     float maxProb = 0f;
                     int clsId = -1;
                     for (int c = 0; c < numClasses; c++)
                     {
-                        float classProb = outputTensor[0, 5 + c, i];
+                        // YOLOv8은 box 데이터(4) 뒤에 바로 class 확률이 나옵니다.
+                        float classProb = outputTensor[0, 4 + c, i];
                         if (classProb > maxProb)
                         {
                             maxProb = classProb;
@@ -106,9 +108,19 @@ namespace PCBVison.Models
                         }
                     }
 
-                    float confidence = objConf * maxProb;
-                    if (confidence < confidenceThreshold || clsId < 0) continue;
+                    // 클래스 확률 최대값을 신뢰도로 사용
+                    float confidence = maxProb;
 
+                    // 신뢰도 임계값 체크
+                    if (confidence < confidenceThreshold) continue;
+
+                    // Bounding Box 좌표 추출
+                    float x = outputTensor[0, 0, i];
+                    float y = outputTensor[0, 1, i];
+                    float w = outputTensor[0, 2, i];
+                    float h = outputTensor[0, 3, i];
+
+                    // 원본 이미지 크기에 맞게 좌표 변환
                     float xScale = (float)originalWidth / 896f;
                     float yScale = (float)originalHeight / 896f;
 
@@ -126,7 +138,6 @@ namespace PCBVison.Models
                     boxes.Add(new Rect(left, top, width, height));
                     confidences.Add(confidence);
                     classIds.Add(clsId);
-
                 }
 
                 // ==========================
@@ -147,25 +158,11 @@ namespace PCBVison.Models
                             Confidence = confidences[idxNms],
                             LabelIndex = clsIndex
                         });
-
                     }
                 }
             }
 
             return results;
-        }
-
-
-
-        public InspectionResult AnalyzeResults(List<DetectionResult> results)
-        {
-            var result = new InspectionResult();
-
-            result.Total = results.Count;
-            result.Pass = results.Count(r => r.Confidence > 0.02f);
-            result.Fail = result.Total - result.Pass;
-
-            return result;
         }
 
         public class DetectionResult

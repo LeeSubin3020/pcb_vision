@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "LgowTCdyzmE=",
+  "dgSpecHash": "1i0QKUxtVvc=",
   "success": true,
   "projectFilePath": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\PCB_Vision.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\subin\\.nuget\\packages\\microsoft.ai.directml\\1.15.4\\microsoft.ai.directml.1.15.4.nupkg.sha512",
-    "C:\\Users\\subin\\.nuget\\packages\\microsoft.ml.onnxruntime\\1.23.0\\microsoft.ml.onnxruntime.1.23.0.nupkg.sha512",
-    "C:\\Users\\subin\\.nuget\\packages\\microsoft.ml.onnxruntime.directml\\1.23.0\\microsoft.ml.onnxruntime.directml.1.23.0.nupkg.sha512",
-    "C:\\Users\\subin\\.nuget\\packages\\microsoft.ml.onnxruntime.managed\\1.23.0\\microsoft.ml.onnxruntime.managed.1.23.0.nupkg.sha512",
+    "C:\\Users\\subin\\.nuget\\packages\\microsoft.ai.directml\\1.12.1\\microsoft.ai.directml.1.12.1.nupkg.sha512",
+    "C:\\Users\\subin\\.nuget\\packages\\microsoft.ml.onnxruntime\\1.16.0\\microsoft.ml.onnxruntime.1.16.0.nupkg.sha512",
+    "C:\\Users\\subin\\.nuget\\packages\\microsoft.ml.onnxruntime.directml\\1.16.0\\microsoft.ml.onnxruntime.directml.1.16.0.nupkg.sha512",
+    "C:\\Users\\subin\\.nuget\\packages\\microsoft.ml.onnxruntime.managed\\1.16.0\\microsoft.ml.onnxruntime.managed.1.16.0.nupkg.sha512",
     "C:\\Users\\subin\\.nuget\\packages\\microsoft.win32.systemevents\\9.0.10\\microsoft.win32.systemevents.9.0.10.nupkg.sha512",
     "C:\\Users\\subin\\.nuget\\packages\\opencvsharp4\\4.11.0.20250507\\opencvsharp4.4.11.0.20250507.nupkg.sha512",
     "C:\\Users\\subin\\.nuget\\packages\\opencvsharp4.extensions\\4.11.0.20250507\\opencvsharp4.extensions.4.11.0.20250507.nupkg.sha512",
@@ -15,7 +15,6 @@
     "C:\\Users\\subin\\.nuget\\packages\\system.buffers\\4.6.1\\system.buffers.4.6.1.nupkg.sha512",
     "C:\\Users\\subin\\.nuget\\packages\\system.drawing.common\\9.0.10\\system.drawing.common.9.0.10.nupkg.sha512",
     "C:\\Users\\subin\\.nuget\\packages\\system.memory\\4.6.3\\system.memory.4.6.3.nupkg.sha512",
-    "C:\\Users\\subin\\.nuget\\packages\\system.numerics.tensors\\9.0.0\\system.numerics.tensors.9.0.0.nupkg.sha512",
     "C:\\Users\\subin\\.nuget\\packages\\system.numerics.vectors\\4.6.1\\system.numerics.vectors.4.6.1.nupkg.sha512",
     "C:\\Users\\subin\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.1.2\\system.runtime.compilerservices.unsafe.6.1.2.nupkg.sha512",
     "C:\\Users\\subin\\.nuget\\packages\\system.valuetuple\\4.6.1\\system.valuetuple.4.6.1.nupkg.sha512"

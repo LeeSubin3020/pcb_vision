@@ -46,21 +46,17 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
-            "Microsoft.AI.DirectML": {
-              "target": "Package",
-              "version": "[1.15.4, )"
-            },
             "Microsoft.ML.OnnxRuntime": {
               "target": "Package",
-              "version": "[1.23.0, )"
+              "version": "[1.16.0, )"
             },
             "Microsoft.ML.OnnxRuntime.DirectML": {
               "target": "Package",
-              "version": "[1.23.0, )"
+              "version": "[1.16.0, )"
             },
             "Microsoft.ML.OnnxRuntime.Managed": {
               "target": "Package",
-              "version": "[1.23.0, )"
+              "version": "[1.16.0, )"
             },
             "OpenCvSharp4": {
               "target": "Package",
@@ -119,6 +115,11 @@
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
         }
       }
     }

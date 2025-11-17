@@ -1,5 +1,6 @@
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using OpenCvSharp.XPhoto;
 using PCBVison.Models;
 using PCBVison.Views;
 using System;
@@ -29,6 +30,7 @@ namespace PCBVison.Presenters
         private int _totalCount = 0;
         private int _passCount = 0;
         private int _failCount = 0;
+        private const int _inspectCount = 5;
 
 
         /// <param name="view">Presenter와 연결될 View 객체 (Form1)</param>
@@ -102,6 +104,49 @@ namespace PCBVison.Presenters
             }
         }
 
+        private void ApplyFilters(Mat frame)
+        {
+            // 필터 적용 로직 구현
+            if (_activeFilters.Contains("White Balance"))
+            {
+                // 1채널 이미지인 경우 3채널 BGR로 변환
+                if (frame.Channels() == 1)
+                {
+                    Cv2.CvtColor(frame, frame, ColorConversionCodes.GRAY2BGR);
+                }
+
+                double blueGain = _view.BlueGain;
+                double greenGain = _view.GreenGain;
+                double redGain = _view.RedGain;
+                double wbGain = _view.WbGain;
+
+                // BGR 채널 분리
+                var bgr = frame.Split();
+
+                // 각각의 채널에 Gain 적용
+                bgr[0] *= blueGain * wbGain;
+                bgr[1] *= greenGain * wbGain;
+                bgr[2] *= redGain * wbGain;
+
+                // 병합해서 프레임 업데이트
+                Cv2.Merge(bgr, frame);
+
+                foreach (var c in bgr)
+                    c.Dispose();
+
+            }
+            if (_activeFilters.Contains("Gaussian Filter"))
+            {
+                Cv2.GaussianBlur(frame, frame, new OpenCvSharp.Size(5, 5), 0);
+            }
+
+            if (_activeFilters.Contains("Median Filter"))
+            {
+                Cv2.MedianBlur(frame, frame, 5);
+            }
+
+        }
+
 
         /// 별도의 스레드에서 실행되며, 실시간 영상 처리를 담당하는 메서드입니다.
         private void ProcessCamera()
@@ -110,89 +155,122 @@ namespace PCBVison.Presenters
             {
                 while (_isRunning)
                 {
-                    if (_capture.Read(_frame) && !_frame.Empty())
+                    if (!_capture.Read(_frame) || _frame.Empty())
                     {
+                        Thread.Sleep(30);
+                        continue;
+                    }
 
-                        Mat processedFrame = _frame.Clone();
+                    using (Mat processedFrame = _frame.Clone())
+                    {
+                        ApplyFilters(processedFrame);
 
-                        // 필터 적용
-                        if (_activeFilters.Contains("White Balance"))
+                        var initialResults = _model.Predict(processedFrame);
+
+                        if (initialResults.Count > 0)
                         {
-                            double blueGain = _view.BlueGain;
-                            double greenGain = _view.GreenGain;
-                            double redGain = _view.RedGain;
-                            double wbGain = _view.WbGain;
+                            _view.Log("부품 감지됨. 5초 정밀 검사를 시작합니다...");
 
-                            // BGR 채널 분리
-                            var bgr = _frame.Split();
+                            DateTime endTime = DateTime.Now.AddSeconds(5);
+                            var partCounts = new Dictionary<string, int>();
 
-                            // 각각의 채널에 Gain 적용
-                            bgr[0] *= blueGain * wbGain;
-                            bgr[1] *= greenGain * wbGain;
-                            bgr[2] *= redGain * wbGain;
+                            // 5초 검사 루프
+                            while (DateTime.Now < endTime && _isRunning)
+                            {
+                                // 루프 안에서 계속 새로운 프레임을 읽습니다.
+                                if (!_capture.Read(_frame) || _frame.Empty())
+                                {
+                                    Thread.Sleep(10);
+                                    continue;
+                                }
 
-                            // 병합해서 프레임 업데이트
-                            Cv2.Merge(bgr, _frame);
+                                using (Mat inspectionFrame = _frame.Clone())
+                                {
+                                    // 새로 읽은 프레임에 필터를 적용합니다.
+                                    ApplyFilters(inspectionFrame);
 
-                            foreach (var c in bgr) 
-                                c.Dispose();
+                                    var currentResults = _model.Predict(inspectionFrame);
 
-                        }
+                                    // A1 카운팅 로직
+                                    int a1CountInFrame = currentResults.Count(r => r.Label == "A1");
+                                    if (a1CountInFrame >= 2)
+                                    {
+                                        if (partCounts.ContainsKey("A1"))
+                                            partCounts["A1"]++;
+                                        else
+                                            partCounts.Add("A1", 1);
+                                    }
+                                    // 다른 부품 카운팅
+                                    foreach (var r in currentResults.Where(res => res.Label != "A1"))
+                                    {
+                                        if (partCounts.ContainsKey(r.Label))
+                                            partCounts[r.Label]++;
+                                        else
+                                            partCounts.Add(r.Label, 1);
+                                    }
 
-                        if (_activeFilters.Contains("Gaussian Filter"))
-                        {
-                            Cv2.GaussianBlur(processedFrame, processedFrame, new OpenCvSharp.Size(5, 5), 0);
-                        }
+                                    foreach (var r in currentResults)
+                                    {
+                                        Scalar boxColor = _model.Colors[r.LabelIndex % _model.Colors.Length];
+                                        Cv2.Rectangle(inspectionFrame, r.Rect, boxColor, 2);
+                                        Cv2.PutText(inspectionFrame, $"{r.Label} {r.Confidence:F2}",
+                                            new OpenCvSharp.Point(r.Rect.X, r.Rect.Y - 5),
+                                            HersheyFonts.HersheySimplex, 0.5, boxColor, 1);
+                                    }
 
-                        if (_activeFilters.Contains("Median Filter"))
-                        {
-                            Cv2.MedianBlur(processedFrame, processedFrame, 5);
-                        }
+                                    using (var bitmap = BitmapConverter.ToBitmap(inspectionFrame))
+                                    {
+                                        _view.ImageViewerImage = (Bitmap)bitmap.Clone();
+                                    }
+                                }
+                                Thread.Sleep(30);
+                            }
 
-                        // 1. 모델 추론 실행
-                        var results = _model.Predict(processedFrame);
+                            if (!_isRunning) break;
 
-                        if (results.Count > 0)
-                        {
+                            // Pass/Fail 판정
                             _totalCount++;
+                            var requiredParts = new List<string> { "A1", "AMS-1117", "CH340G", "S4" };
+                            const int minDetections = 7;
 
-                            // 하나라도 Confidence 낮으면 불량 처리
-                            bool isFail = results.Any(r => r.Confidence < 0.02f);
-                            if (isFail)
-                                _failCount++;
-                            else
+                            bool isPass = requiredParts.All(partName =>
+                                partCounts.ContainsKey(partName) && partCounts[partName] >= minDetections);
+
+                            if (isPass)
+                            {
                                 _passCount++;
+                                _view.Log("PCB 검사 결과 정상입니다.");
+
+                            }
+                            else
+                            {
+                                _failCount++;
+                                _view.Log("PCB 검사 결과 불량입니다.");
+                                foreach (var partName in requiredParts)
+                                {
+                                    if (!partCounts.ContainsKey(partName) || partCounts[partName] < minDetections)
+                                    {
+                                        _view.Log($" -> 부품 {partName} 누락 개수: {partCounts.GetValueOrDefault(partName, 0)}");
+                                    }
+                                }
+                            }
+
+                            _view.TotalCount = _totalCount;
+                            _view.PassCount = _passCount;
+                            _view.FailCount = _failCount;
+
+                            Thread.Sleep(5000);
                         }
-
-                        // 2. 검출 결과를 분석 (검사율 계산)
-                        var inspection = _model.AnalyzeResults(results);
-                        _view.TotalCount = inspection.Total;
-                        _view.PassCount = inspection.Pass;
-                        _view.FailCount = inspection.Fail;
-
-                        //추론 결과를 원본 프레임(_frame)에 그리기
-                        foreach (var r in results)
+                        else
                         {
-
-                            // 디버깅 로그
-                            _view.Log($"Found: {r.Label} at ({r.Rect.X},{r.Rect.Y},{r.Rect.Width},{r.Rect.Height}) Conf: {r.Confidence:F2}");
-
-                            Scalar boxColor = _model.Colors[r.LabelIndex % _model.Colors.Length];
-
-                            // 화면에 그리기
-                            Cv2.Rectangle(_frame, r.Rect, boxColor, 2);
-                            Cv2.PutText(_frame, $"{r.Label} {r.Confidence:F2}",
-                                new OpenCvSharp.Point(r.Rect.X, r.Rect.Y - 5),
-                                HersheyFonts.HersheySimplex, 0.5, boxColor, 1);
-                        }
-
-                        // 3. 결과가 그려진 프레임을 Bitmap으로 변환하여 View에 전달
-                        using (var bitmap = BitmapConverter.ToBitmap(_frame))
-                        {
-                            // View에 이미지를 전달할 때는 복사본을 전달하여 스레드간 충돌을 방지합니다.
-                            _view.ImageViewerImage = (Bitmap)bitmap.Clone();
+                            // 부품 미감지 시, 필터 적용된 프레임을 UI에 표시
+                            using (var bitmap = BitmapConverter.ToBitmap(processedFrame))
+                            {
+                                _view.ImageViewerImage = (Bitmap)bitmap.Clone();
+                            }
                         }
                     }
+
                     Thread.Sleep(30);
                 }
             }
