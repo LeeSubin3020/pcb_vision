@@ -23,6 +23,9 @@ namespace PCBVison.Presenters
         private readonly IMainView _view; // View와 통신하기 위한 인터페이스. Presenter는 이것이 Form1인지 전혀 모릅니다.
         private readonly PcbModel _model;
         private readonly HashSet<string> _activeFilters = new HashSet<string>();
+        private readonly string _logFilePath = @"C:\PCB_Inspection_Logs\Inspection_Detail_Log.txt";
+        private readonly object _fileLock = new object(); // 스레드 안정성
+
         private VideoCapture _capture;    // OpenCV 카메라 캡처 객체
         private Mat _frame;               // 카메라로부터 한 프레임을 받아올 객체
         private Thread _cameraThread;     // 실시간 영상 처리를 위한 별도의 스레드
@@ -30,15 +33,27 @@ namespace PCBVison.Presenters
         private int _totalCount = 0;
         private int _passCount = 0;
         private int _failCount = 0;
-        private const int _inspectCount = 5;
-
-
+        private int _inspectListCount = 1;
         /// <param name="view">Presenter와 연결될 View 객체 (Form1)</param>
 
         public MainPresenter(IMainView view, string onnxPath)
         {
             _view = view;
             _model = new PcbModel(onnxPath);
+
+            //로그 디렉토리 생성
+            var dir = Path.GetDirectoryName(_logFilePath);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            // 첫 실행시 헤더 작성
+            if (!File.Exists(_logFilePath))
+            {
+                File.WriteAllText(_logFilePath,
+                "시간\t순번\t결과\tA1(횟수/conf)\tAMS-1117(횟수/conf)\tCH340G(횟수/conf)\tS4(횟수/conf)\t평균 Confidence\r\n");
+            }
 
             // View에서 발생하는 이벤트를 Presenter의 메서드와 연결(이벤트 구독)
             // 이제 View에서 StartStopClicked 이벤트가 발생하면, OnStartStopClicked 메서드가 자동으로 호출됩니다.
@@ -78,6 +93,7 @@ namespace PCBVison.Presenters
 
 
                 // 3. 변수 및 스레드 초기화 후, 영상 처리 스레드 시작
+                _view.ClearInspectionList();
                 _frame = new Mat();
                 _isRunning = true;
                 _cameraThread = new Thread(ProcessCamera);
@@ -144,6 +160,20 @@ namespace PCBVison.Presenters
             {
                 Cv2.MedianBlur(frame, frame, 5);
             }
+            
+            if(_activeFilters.Contains("Unsharp Mask"))
+            {
+                double sigma = _view.SigmaGain;
+                double intensity = _view.IntensityGain;
+
+                using (var blurred = new Mat())
+                {
+                    Cv2.GaussianBlur(frame, blurred, new OpenCvSharp.Size(0, 0), sigma);
+
+                    // sharpened = original * (1 + amount) + blurred * (-amount)
+                    Cv2.AddWeighted(frame, 1 + intensity, blurred, -intensity, 0, frame);
+                }
+            }
 
         }
 
@@ -177,7 +207,6 @@ namespace PCBVison.Presenters
                             // 5초 검사 루프
                             while (DateTime.Now < endTime && _isRunning)
                             {
-                                // 루프 안에서 계속 새로운 프레임을 읽습니다.
                                 if (!_capture.Read(_frame) || _frame.Empty())
                                 {
                                     Thread.Sleep(10);
@@ -186,7 +215,6 @@ namespace PCBVison.Presenters
 
                                 using (Mat inspectionFrame = _frame.Clone())
                                 {
-                                    // 새로 읽은 프레임에 필터를 적용합니다.
                                     ApplyFilters(inspectionFrame);
 
                                     var currentResults = _model.Predict(inspectionFrame);
@@ -233,26 +261,37 @@ namespace PCBVison.Presenters
                             var requiredParts = new List<string> { "A1", "AMS-1117", "CH340G", "S4" };
                             const int minDetections = 7;
 
-                            bool isPass = requiredParts.All(partName =>
-                                partCounts.ContainsKey(partName) && partCounts[partName] >= minDetections);
+                            var missingParts = new List<string>();
+                   
 
+                            foreach (var partName in requiredParts)
+                            {
+                                int detected = partCounts.GetValueOrDefault(partName, 0);
+                                if (detected < minDetections)
+                                {
+                                    missingParts.Add(partName);
+                                    // 상세 로그는 여기서 남김 (디버깅용)
+                                    _view.Log($" -> 부품 {partName} 감지 횟수: {detected} (필요 {minDetections}회)");
+                                }
+                            }
+                            bool isPass = missingParts.Count == 0;
                             if (isPass)
                             {
                                 _passCount++;
                                 _view.Log("PCB 검사 결과 정상입니다.");
+                                _view.AddInspectionResultLine($"{_inspectListCount++,4}: 정상");
 
                             }
                             else
                             {
                                 _failCount++;
                                 _view.Log("PCB 검사 결과 불량입니다.");
-                                foreach (var partName in requiredParts)
-                                {
-                                    if (!partCounts.ContainsKey(partName) || partCounts[partName] < minDetections)
-                                    {
-                                        _view.Log($" -> 부품 {partName} 누락 개수: {partCounts.GetValueOrDefault(partName, 0)}");
-                                    }
-                                }
+
+                                // 누락된 부품들을 "A1, CH340G, S4" 형태로 한 줄로 만든다
+                                string missingText = string.Join(", ", missingParts);
+
+                                _view.AddInspectionResultLine($"{_inspectListCount++,4}: 불량 - {missingText} 누락");
+
                             }
 
                             _view.TotalCount = _totalCount;
@@ -280,12 +319,9 @@ namespace PCBVison.Presenters
             }
         }
 
-        /// View의 FormClosing 이벤트가 발생했을 때 호출되는 메서드입니다.
-        /// 프로그램 종료 시 리소스를 안전하게 해제하는 역할을 합니다.
         private void OnFormClosing(object sender, EventArgs e)
         {
             _isRunning = false;
-            // 수정: 스레드 종료 시 타임아웃을 두어 UI 멈춤 방지
             if (_cameraThread != null && _cameraThread.IsAlive)
             {
                 if (!_cameraThread.Join(1000))

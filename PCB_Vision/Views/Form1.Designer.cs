@@ -38,6 +38,13 @@
             filterControllerBox = new GroupBox();
             filterController = new CheckedListBox();
             whiteBalnceGain = new GroupBox();
+            UnsharpMaskGain = new GroupBox();
+            lbIntensity = new Label();
+            lbSigma = new Label();
+            numIntensity = new NumericUpDown();
+            numSigma = new NumericUpDown();
+            intensityTrackbar = new TrackBar();
+            sigmaTrackBar = new TrackBar();
             wbTrackBar = new TrackBar();
             numWb = new NumericUpDown();
             lblWb = new Label();
@@ -57,7 +64,7 @@
             lblTotal = new Label();
             btnStartInspect = new Button();
             inspectionListBox = new GroupBox();
-            listBox1 = new ListBox();
+            inspectResultList = new ListBox();
             headerLayoutPanel = new TableLayoutPanel();
             label1 = new Label();
             checkedListBox1 = new CheckedListBox();
@@ -70,6 +77,11 @@
             filterLayoutPanel.SuspendLayout();
             filterControllerBox.SuspendLayout();
             whiteBalnceGain.SuspendLayout();
+            UnsharpMaskGain.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numIntensity).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numSigma).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)intensityTrackbar).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)sigmaTrackBar).BeginInit();
             ((System.ComponentModel.ISupportInitialize)wbTrackBar).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numWb).BeginInit();
             ((System.ComponentModel.ISupportInitialize)redTrackBar).BeginInit();
@@ -221,6 +233,7 @@
             // whiteBalnceGain
             // 
             whiteBalnceGain.Anchor = AnchorStyles.None;
+            whiteBalnceGain.Controls.Add(UnsharpMaskGain);
             whiteBalnceGain.Controls.Add(wbTrackBar);
             whiteBalnceGain.Controls.Add(numWb);
             whiteBalnceGain.Controls.Add(lblWb);
@@ -241,7 +254,72 @@
             whiteBalnceGain.Size = new Size(279, 502);
             whiteBalnceGain.TabIndex = 1;
             whiteBalnceGain.TabStop = false;
-            whiteBalnceGain.Text = "White Balance Gain";
+            whiteBalnceGain.Text = "White Balance ";
+            // 
+            // UnsharpMaskGain
+            // 
+            UnsharpMaskGain.Controls.Add(lbIntensity);
+            UnsharpMaskGain.Controls.Add(lbSigma);
+            UnsharpMaskGain.Controls.Add(numIntensity);
+            UnsharpMaskGain.Controls.Add(numSigma);
+            UnsharpMaskGain.Controls.Add(intensityTrackbar);
+            UnsharpMaskGain.Controls.Add(sigmaTrackBar);
+            UnsharpMaskGain.Location = new Point(16, 326);
+            UnsharpMaskGain.Name = "UnsharpMaskGain";
+            UnsharpMaskGain.Size = new Size(200, 168);
+            UnsharpMaskGain.TabIndex = 12;
+            UnsharpMaskGain.TabStop = false;
+            UnsharpMaskGain.Text = "Unsharp Mask";
+            // 
+            // lbIntensity
+            // 
+            lbIntensity.AutoSize = true;
+            lbIntensity.Location = new Point(10, 93);
+            lbIntensity.Name = "lbIntensity";
+            lbIntensity.Size = new Size(66, 19);
+            lbIntensity.TabIndex = 16;
+            lbIntensity.Text = "선명도";
+            // 
+            // lbSigma
+            // 
+            lbSigma.AutoSize = true;
+            lbSigma.Location = new Point(11, 32);
+            lbSigma.Name = "lbSigma";
+            lbSigma.Size = new Size(58, 19);
+            lbSigma.TabIndex = 13;
+            lbSigma.Text = "Sigma";
+            // 
+            // numIntensity
+            // 
+            numIntensity.Location = new Point(120, 117);
+            numIntensity.Margin = new Padding(3, 4, 3, 4);
+            numIntensity.Name = "numIntensity";
+            numIntensity.Size = new Size(69, 29);
+            numIntensity.TabIndex = 15;
+            // 
+            // numSigma
+            // 
+            numSigma.Location = new Point(120, 55);
+            numSigma.Margin = new Padding(3, 4, 3, 4);
+            numSigma.Name = "numSigma";
+            numSigma.Size = new Size(69, 29);
+            numSigma.TabIndex = 13;
+            // 
+            // intensityTrackbar
+            // 
+            intensityTrackbar.Location = new Point(0, 117);
+            intensityTrackbar.Margin = new Padding(3, 4, 3, 4);
+            intensityTrackbar.Name = "intensityTrackbar";
+            intensityTrackbar.Size = new Size(114, 45);
+            intensityTrackbar.TabIndex = 14;
+            // 
+            // sigmaTrackBar
+            // 
+            sigmaTrackBar.Location = new Point(-1, 55);
+            sigmaTrackBar.Margin = new Padding(3, 4, 3, 4);
+            sigmaTrackBar.Name = "sigmaTrackBar";
+            sigmaTrackBar.Size = new Size(114, 45);
+            sigmaTrackBar.TabIndex = 13;
             // 
             // wbTrackBar
             // 
@@ -420,7 +498,7 @@
             // 
             // inspectionListBox
             // 
-            inspectionListBox.Controls.Add(listBox1);
+            inspectionListBox.Controls.Add(inspectResultList);
             inspectionListBox.Dock = DockStyle.Fill;
             inspectionListBox.Font = new Font("굴림", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 129);
             inspectionListBox.Location = new Point(3, 414);
@@ -432,16 +510,16 @@
             inspectionListBox.TabStop = false;
             inspectionListBox.Text = "검사 결과";
             // 
-            // listBox1
+            // inspectResultList
             // 
-            listBox1.Dock = DockStyle.Fill;
-            listBox1.FormattingEnabled = true;
-            listBox1.ItemHeight = 19;
-            listBox1.Location = new Point(3, 26);
-            listBox1.Margin = new Padding(3, 4, 3, 4);
-            listBox1.Name = "listBox1";
-            listBox1.Size = new Size(206, 472);
-            listBox1.TabIndex = 0;
+            inspectResultList.Dock = DockStyle.Fill;
+            inspectResultList.FormattingEnabled = true;
+            inspectResultList.ItemHeight = 19;
+            inspectResultList.Location = new Point(3, 26);
+            inspectResultList.Margin = new Padding(3, 4, 3, 4);
+            inspectResultList.Name = "inspectResultList";
+            inspectResultList.Size = new Size(206, 472);
+            inspectResultList.TabIndex = 0;
             // 
             // headerLayoutPanel
             // 
@@ -500,6 +578,12 @@
             filterControllerBox.ResumeLayout(false);
             whiteBalnceGain.ResumeLayout(false);
             whiteBalnceGain.PerformLayout();
+            UnsharpMaskGain.ResumeLayout(false);
+            UnsharpMaskGain.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numIntensity).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numSigma).EndInit();
+            ((System.ComponentModel.ISupportInitialize)intensityTrackbar).EndInit();
+            ((System.ComponentModel.ISupportInitialize)sigmaTrackBar).EndInit();
             ((System.ComponentModel.ISupportInitialize)wbTrackBar).EndInit();
             ((System.ComponentModel.ISupportInitialize)numWb).EndInit();
             ((System.ComponentModel.ISupportInitialize)redTrackBar).EndInit();
@@ -552,8 +636,15 @@
         private System.Windows.Forms.Label lblTotal;
         private System.Windows.Forms.Label lblPass;
         private System.Windows.Forms.Label lblFail;
-        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.ListBox inspectResultList;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private GroupBox UnsharpMaskGain;
+        private TrackBar sigmaTrackBar;
+        private TrackBar intensityTrackbar;
+        private Label lbIntensity;
+        private Label lbSigma;
+        private NumericUpDown numIntensity;
+        private NumericUpDown numSigma;
     }
 }
 

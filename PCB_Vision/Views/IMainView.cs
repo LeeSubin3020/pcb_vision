@@ -19,6 +19,9 @@ namespace PCBVison.Views
         /// 리소스 해제 등 마무리 작업을 위해 Presenter에게 알려주는 역할을 합니다.
         event FormClosingEventHandler? FormClosing;
 
+        void AddInspectionResultLine(string formattedLine);
+        void ClearInspectionList();
+
 
         // --- Presenter가 View의 상태를 제어(읽거나 변경)하기 위한 멤버 ---
 
@@ -41,6 +44,11 @@ namespace PCBVison.Views
         double GreenGain { get; }
         double RedGain { get; }
         double WbGain { get; }
+
+        // Unsharp Mask Gain 속성 값
+        double SigmaGain { get; }
+        double IntensityGain { get; }
+
 
         // 검사율
         int TotalCount { set; }

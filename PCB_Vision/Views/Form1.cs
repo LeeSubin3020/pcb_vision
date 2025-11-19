@@ -16,6 +16,9 @@ namespace PCBVison
         private double greenGain = 1.0;
         private double redGain = 1.0;
         private double wbGain = 1.0;
+        private double sgGain = 1.0;
+        private double intensityGain = 1.0;
+       
 
         // IMainView 인터페이스에 정의된 이벤트들을 선언합니다.
         // 이 이벤트들은 Presenter가 구독하게 됩니다.
@@ -41,15 +44,24 @@ namespace PCBVison
                 this.Load += Form1_Fillter;
             }
 
-            // TrackBar 범위(0.5배 ~ 2배)
+            // TrackBar 범위(0.5배 ~ 3배)
             blueTrackBar.Minimum = 50;
             blueTrackBar.Maximum = 200;
+
             greenTrackBar.Minimum = 50;
             greenTrackBar.Maximum = 200;
+
             redTrackBar.Minimum = 50;
             redTrackBar.Maximum = 200;
+
             wbTrackBar.Minimum = 50;
             wbTrackBar.Maximum = 200;
+
+            sigmaTrackBar.Minimum = 50;
+            sigmaTrackBar.Maximum = 300;
+
+            intensityTrackbar.Minimum = 50;
+            intensityTrackbar.Maximum = 300;
 
             numBlue.DecimalPlaces = 2;
             numBlue.Increment = 0.01M;
@@ -75,22 +87,39 @@ namespace PCBVison
             numWb.Maximum = 2.0M;
             numWb.Value = 1.0M;
 
+            numSigma.DecimalPlaces = 2;
+            numSigma.Increment = 0.1M;
+            numSigma.Minimum = 0.5M;
+            numSigma.Maximum = 3.0M;
+            numSigma.Value = 1.0M;
+            
+            numIntensity.DecimalPlaces = 2;
+            numIntensity.Increment = 0.1M;
+            numIntensity.Minimum = 0.5M;
+            numIntensity.Maximum = 3.0M;
+            numIntensity.Value = 1.0M;
+
 
             // 초기값
             blueTrackBar.Value = greenTrackBar.Value = redTrackBar.Value = wbTrackBar.Value = 100;
+            sigmaTrackBar.Value = intensityTrackbar.Value = 50;
             numBlue.Value = numGreen.Value = numRed.Value = numWb.Value = 1.0M;
+            numSigma.Value = numIntensity.Value = 1.0M;
 
             // TrackBar <-> NumericUpDown 연동
             blueTrackBar.Scroll += (sender, e) => SyncTrackAndNum(blueTrackBar, numBlue);
             greenTrackBar.Scroll += (sender, e) => SyncTrackAndNum(greenTrackBar, numGreen);
             redTrackBar.Scroll += (sender, e) => SyncTrackAndNum(redTrackBar, numRed);
             wbTrackBar.Scroll += (sender, e) => SyncTrackAndNum(wbTrackBar, numWb);
+            sigmaTrackBar.Scroll += (sender, e) => SyncTrackAndNum(sigmaTrackBar, numSigma);
+            intensityTrackbar.Scroll += (sender, e) => SyncTrackAndNum(intensityTrackbar, numIntensity);
 
             numBlue.ValueChanged += (sender, e) => SyncNumAndTrack(numBlue, blueTrackBar);
             numGreen.ValueChanged += (sender, e) => SyncNumAndTrack(numGreen, greenTrackBar);
             numRed.ValueChanged += (sender, e) => SyncNumAndTrack(numRed, redTrackBar);
             numWb.ValueChanged += (sender, e) => SyncNumAndTrack(numWb, wbTrackBar);
-
+            numSigma.ValueChanged += (sender, e) => SyncNumAndTrack(numSigma, sigmaTrackBar);
+            numIntensity.ValueChanged += (sender, e) => SyncNumAndTrack(numIntensity, intensityTrackbar);
         }
 
         private void SyncTrackAndNum(TrackBar tb, NumericUpDown num)
@@ -100,6 +129,7 @@ namespace PCBVison
                 num.Value = val;
 
             UpdateColorGains();
+            UnsharpMaskGains();
         }
 
         private void SyncNumAndTrack(NumericUpDown num, TrackBar tb)
@@ -123,10 +153,20 @@ namespace PCBVison
             redGain = (double)numRed.Value;
             wbGain = (double)numWb.Value;
         }
+
+        private void UnsharpMaskGains()
+        {
+            sgGain = (double)numSigma.Value;
+            intensityGain = (double)numIntensity.Value;
+        }
+
         public double BlueGain => blueGain;
         public double GreenGain => greenGain;
         public double RedGain => redGain;
         public double WbGain => wbGain;
+        public double SigmaGain => sgGain;
+        
+        public double IntensityGain => intensityGain;
 
         /// Presenter가 전달해준 이미지를 화면에 표시하는 속성입니다.
         public Image ImageViewerImage
@@ -173,6 +213,7 @@ namespace PCBVison
             filterController.Items.Add("White Balance");
             filterController.Items.Add("Gaussian Filter");
             filterController.Items.Add("Median Filter");
+            filterController.Items.Add("Unsharp Mask");
 
             // 체크 상태 변경 시 Presenter로 전달
             filterController.ItemCheck += (s, ev) =>
@@ -182,6 +223,32 @@ namespace PCBVison
                     ev.NewValue == CheckState.Checked
                 );
             };
+        }
+
+        //검사 결과를 ListBox에 추가 하는 메서드
+        public void AddInspectionResultLine(string formattedLine)
+        {
+            if (inspectResultList.InvokeRequired)
+            {
+                inspectResultList.Invoke(new Action(() => AddInspectionResultLine(formattedLine)));
+                return;
+            }
+
+            inspectResultList.Items.Add(formattedLine);
+            // 최신 결과가 보이도록 자동 스크롤
+            inspectResultList.TopIndex = inspectResultList.Items.Count - 1;
+
+        }
+
+        public void ClearInspectionList()
+        {
+            if (inspectResultList.InvokeRequired)
+            {
+                inspectResultList.Invoke(new Action(ClearInspectionList));
+                return;
+            }
+
+            inspectResultList.Items.Clear();
         }
 
         /// Presenter의 지시에 따라 시작/중지 버튼의 텍스트를 변경하는 속성입니다.

@@ -11,12 +11,16 @@
       "RelativeMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|solutionrelative:pcb_vision\\models\\mainmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|c:\\users\\subin\\documents\\github\\pcb_vision\\pcb_vision\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|solutionrelative:pcb_vision\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|c:\\users\\subin\\documents\\github\\pcb_vision\\pcb_vision\\views\\imainview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|solutionrelative:pcb_vision\\views\\imainview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\pcb_vision\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|c:\\users\\subin\\documents\\github\\pcb_vision\\pcb_vision\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|solutionrelative:pcb_vision\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|c:\\users\\subin\\documents\\github\\pcb_vision\\pcb_vision\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|solutionrelative:pcb_vision\\views\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,20 +30,33 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "Form1.cs",
               "DocumentMoniker": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Views\\Form1.cs",
               "RelativeDocumentMoniker": "PCB_Vision\\Views\\Form1.cs",
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Views\\Form1.cs",
               "RelativeToolTip": "PCB_Vision\\Views\\Form1.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAABGAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAPsAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-02T01:48:12.158Z",
               "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "IMainView.cs",
+              "DocumentMoniker": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Views\\IMainView.cs",
+              "RelativeDocumentMoniker": "PCB_Vision\\Views\\IMainView.cs",
+              "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Views\\IMainView.cs",
+              "RelativeToolTip": "PCB_Vision\\Views\\IMainView.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAiwCcAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-19T08:15:58.727Z",
               "EditorCaption": ""
             },
             {
@@ -50,7 +67,7 @@
               "RelativeDocumentMoniker": "PCB_Vision\\Presenters\\MainPresenter.cs",
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Presenters\\MainPresenter.cs",
               "RelativeToolTip": "PCB_Vision\\Presenters\\MainPresenter.cs",
-              "ViewState": "AgIAAPwAAAAAAAAAAAAQwOkAAAA3AAAAAAAAAA==",
+              "ViewState": "AgIAAFYAAAAAAAAAAAAowDwAAAAvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-14T11:06:00.107Z",
               "EditorCaption": ""
@@ -63,7 +80,7 @@
               "RelativeDocumentMoniker": "PCB_Vision\\Models\\MainModel.cs",
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Models\\MainModel.cs",
               "RelativeToolTip": "PCB_Vision\\Models\\MainModel.cs",
-              "ViewState": "AgIAAF8AAAAAAAAAAAAQwB4AAAA1AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-02T02:03:28.151Z",
               "EditorCaption": ""
@@ -77,7 +94,8 @@
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Views\\Form1.cs [\uB514\uC790\uC778]",
               "RelativeToolTip": "PCB_Vision\\Views\\Form1.cs [\uB514\uC790\uC778]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-02T01:47:56.418Z"
+              "WhenOpened": "2025-11-02T01:47:56.418Z",
+              "EditorCaption": " [\uB514\uC790\uC778]"
             }
           ]
         }
