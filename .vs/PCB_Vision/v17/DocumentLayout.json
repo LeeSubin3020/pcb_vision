@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|c:\\users\\subin\\documents\\github\\pcb_vision\\pcb_vision\\presenters\\mainpresenter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|solutionrelative:pcb_vision\\presenters\\mainpresenter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|c:\\users\\subin\\documents\\github\\pcb_vision\\pcb_vision\\views\\imainview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|solutionrelative:pcb_vision\\views\\imainview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|c:\\users\\subin\\documents\\github\\pcb_vision\\pcb_vision\\presenters\\mainpresenter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|solutionrelative:pcb_vision\\presenters\\mainpresenter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{5256EBA1-C1B2-4DB0-9F22-36E01C581A26}|PCB_Vision\\PCB_Vision.csproj|c:\\users\\subin\\documents\\github\\pcb_vision\\pcb_vision\\models\\mainmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -30,7 +30,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
@@ -48,26 +48,26 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "IMainView.cs",
               "DocumentMoniker": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Views\\IMainView.cs",
               "RelativeDocumentMoniker": "PCB_Vision\\Views\\IMainView.cs",
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Views\\IMainView.cs",
               "RelativeToolTip": "PCB_Vision\\Views\\IMainView.cs",
-              "ViewState": "AgIAABUAAAAAAAAAAAAiwCcAAAAhAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-19T08:15:58.727Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "MainPresenter.cs",
               "DocumentMoniker": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Presenters\\MainPresenter.cs",
               "RelativeDocumentMoniker": "PCB_Vision\\Presenters\\MainPresenter.cs",
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Presenters\\MainPresenter.cs",
               "RelativeToolTip": "PCB_Vision\\Presenters\\MainPresenter.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAuwCUAAABAAAAAAAAAAA==",
+              "ViewState": "AgIAAMABAAAAAAAAAAAuwNMBAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-14T11:06:00.107Z",
               "EditorCaption": ""
@@ -82,7 +82,8 @@
               "RelativeToolTip": "PCB_Vision\\Models\\MainModel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-02T02:03:28.151Z"
+              "WhenOpened": "2025-11-02T02:03:28.151Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -93,7 +94,8 @@
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Views\\Form1.cs [\uB514\uC790\uC778]",
               "RelativeToolTip": "PCB_Vision\\Views\\Form1.cs [\uB514\uC790\uC778]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-02T01:47:56.418Z"
+              "WhenOpened": "2025-11-02T01:47:56.418Z",
+              "EditorCaption": " [\uB514\uC790\uC778]"
             }
           ]
         }

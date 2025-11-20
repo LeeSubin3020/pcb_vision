@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using OpenCvSharp.XPhoto;
@@ -24,11 +25,12 @@ namespace PCBVison.Presenters
         private readonly string _logFilePath; //상세로그 저장 경로
         private readonly object _fileLock = new object(); // 스레드 안정성
         private readonly string _defectImagePath;  // 불량 이미지 저장 폴더
+        private readonly string _dbPath;
 
         private VideoCapture _capture;    // OpenCV 카메라 캡처 객체
         private Mat _frame;               // 카메라로부터 한 프레임을 받아올 객체
         private Thread _cameraThread;     // 실시간 영상 처리를 위한 별도의 스레드
-        private bool _isRunning;         
+        private bool _isRunning;
         private int _totalCount = 0;
         private int _passCount = 0;
         private int _failCount = 0;
@@ -45,8 +47,36 @@ namespace PCBVison.Presenters
 
             // 로그 폴더
             string logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PCB_Inspection_Logs");
-            Directory.CreateDirectory(logDir); 
+            Directory.CreateDirectory(logDir);
             _logFilePath = Path.Combine(logDir, "Inspection_Detail_Log.txt");
+
+            // SQLite DB 파일 경로
+            _dbPath = Path.Combine(logDir, "PCB_Inspection.db");
+            using (var connection = new SqliteConnection($"Data Source={_dbPath}"))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = @"
+                    CREATE TABLE IF NOT EXISTS InspectionResults (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Timestamp TEXT NOT NULL,
+                        Seq INTEGER NOT NULL,
+                        Result TEXT NOT NULL,
+                        A1_Count INTEGER,
+                        A1_Conf REAL,
+                        A1_MaxSimultaneous INTEGER,
+                        AMS1117_Count INTEGER,
+                        AMS1117_Conf REAL,
+                        CH340G_Count INTEGER,
+                        CH340G_Conf REAL,
+                        S4_Count INTEGER,
+                        S4_Conf REAL,
+                        Overall_Confidence REAL,
+                        MissingParts TEXT,
+                        DefectImagePath TEXT
+                    );";
+                command.ExecuteNonQuery();
+            }
 
             // 불량 이미지 저장 폴더
             string defectDir = Path.Combine(logDir, "Defects");
@@ -60,8 +90,6 @@ namespace PCBVison.Presenters
                     "시간\t순번\t결과\tA1(횟수/conf)\tAMS-1117(횟수/conf)\tCH340G(횟수/conf)\tS4(횟수/conf)\t평균 Confidence\r\n");
             }
 
-            // View에서 발생하는 이벤트를 Presenter의 메서드와 연결(이벤트 구독)
-            // 이제 View에서 StartStopClicked 이벤트가 발생하면, OnStartStopClicked 메서드가 자동으로 호출됩니다.
             _view.StartStopClicked += OnStartStopClicked;
             _view.FormClosing += OnFormClosing;
         }
@@ -100,16 +128,16 @@ namespace PCBVison.Presenters
                 _view.StartButtonText = "검사 중지";
                 _view.Log("카메라 시작");
             }
-            else 
+            else
             {
                 _isRunning = false;
-       
+
                 if (_cameraThread != null && _cameraThread.IsAlive)
                 {
                     if (!_cameraThread.Join(1000))  // 최대 1초 대기
                     {
                         // 정상적으로 종료되지 않으면 강제 중단 (선택적)
-                        _cameraThread.Interrupt(); 
+                        _cameraThread.Interrupt();
                     }
                 }
                 _capture?.Release();
@@ -159,8 +187,8 @@ namespace PCBVison.Presenters
             {
                 Cv2.MedianBlur(frame, frame, 5);
             }
-            
-            if(_activeFilters.Contains("Unsharp Mask"))
+
+            if (_activeFilters.Contains("Unsharp Mask"))
             {
                 double sigma = _view.SigmaGain;
                 double intensity = _view.IntensityGain;
@@ -313,17 +341,18 @@ namespace PCBVison.Presenters
                             }
 
                             double overallAvg = totalDetCount > 0 ? totalConfSum / totalDetCount : 0.0;
-                            
+
                             string resultText = isPass ? "정상" : $"불량 - {string.Join(", ", missingParts)} 누락";
 
                             if (isPass) _passCount++; else _failCount++;
 
                             _view.AddInspectionResultLine($"{_inspectionSeq++,4}: {resultText}");
                             _view.Log(isPass ? "PCB 검사 결과 정상입니다." : "PCB 검사 결과 불량입니다.");
+                            string fullPath = "";
 
                             // 불량 이미지 저장
-                            if (!isPass) 
-                            { 
+                            if (!isPass)
+                            {
                                 using (var currentBitmap = _view.ImageViewerImage)
                                 {
                                     if (currentBitmap != null)
@@ -335,7 +364,7 @@ namespace PCBVison.Presenters
                                             if (string.IsNullOrEmpty(missingText)) missingText = "기타";
 
                                             string fileName = $"불량_{timestamp}_{_inspectionSeq - 1:D3}_{missingText}.png";
-                                            string fullPath = Path.Combine(_defectImagePath, fileName);
+                                            fullPath = Path.Combine(_defectImagePath, fileName);
 
                                             currentBitmap.Save(fullPath, System.Drawing.Imaging.ImageFormat.Png);
                                             _view.Log($"불량 이미지 저장: {fileName}");
@@ -365,6 +394,53 @@ namespace PCBVison.Presenters
                             lock (_fileLock)
                             {
                                 File.AppendAllText(_logFilePath, logLine + "\r\n");
+                            }
+
+                            // SQLite DB 저장
+                            try
+                            {
+                                using (var connection = new SqliteConnection($"Data Source={_dbPath}"))
+                                {
+                                    connection.Open();
+                                    var command = connection.CreateCommand();
+                                    command.CommandText = @"
+                                        INSERT INTO InspectionResults 
+                                        (Timestamp, Seq, Result, 
+                                         A1_Count, A1_Conf, A1_MaxSimultaneous,
+                                         AMS1117_Count, AMS1117_Conf,
+                                         CH340G_Count, CH340G_Conf,
+                                         S4_Count, S4_Conf,
+                                         Overall_Confidence, MissingParts, DefectImagePath)
+                                        VALUES 
+                                        (@ts, @seq, @result,
+                                         @a1c, @a1conf, @a1max,
+                                         @amsc, @amsconf,
+                                         @chc, @chconf,
+                                         @s4c, @s4conf,
+                                         @overall, @missing, @image)";
+
+                                    command.Parameters.AddWithValue("@ts", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                                    command.Parameters.AddWithValue("@seq", _inspectionSeq - 1);
+                                    command.Parameters.AddWithValue("@result", resultText);
+                                    command.Parameters.AddWithValue("@a1c", partCounts.GetValueOrDefault("A1", 0));
+                                    command.Parameters.AddWithValue("@a1conf", _partConfidences.ContainsKey("A1") ? _partConfidences["A1"].Average() : 0f);
+                                    command.Parameters.AddWithValue("@a1max", _maxA1InFrame);
+                                    command.Parameters.AddWithValue("@amsc", partCounts.GetValueOrDefault("AMS-1117", 0));
+                                    command.Parameters.AddWithValue("@amsconf", _partConfidences.ContainsKey("AMS-1117") ? _partConfidences["AMS-1117"].Average() : 0f);
+                                    command.Parameters.AddWithValue("@chc", partCounts.GetValueOrDefault("CH340G", 0));
+                                    command.Parameters.AddWithValue("@chconf", _partConfidences.ContainsKey("CH340G") ? _partConfidences["CH340G"].Average() : 0f);
+                                    command.Parameters.AddWithValue("@s4c", partCounts.GetValueOrDefault("S4", 0));
+                                    command.Parameters.AddWithValue("@s4conf", _partConfidences.ContainsKey("S4") ? _partConfidences["S4"].Average() : 0f);
+                                    command.Parameters.AddWithValue("@overall", overallAvg);
+                                    command.Parameters.AddWithValue("@missing", string.Join(", ", missingParts));
+                                    command.Parameters.AddWithValue("@image", !isPass ? fullPath : ""); // 불량 이미지 경로
+
+                                    command.ExecuteNonQuery();
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _view.Log($"DB 저장 실패: {ex.Message}");
                             }
 
                             _view.TotalCount = _totalCount;

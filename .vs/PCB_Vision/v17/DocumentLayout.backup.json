@@ -54,7 +54,7 @@
               "RelativeDocumentMoniker": "PCB_Vision\\Views\\IMainView.cs",
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Views\\IMainView.cs",
               "RelativeToolTip": "PCB_Vision\\Views\\IMainView.cs",
-              "ViewState": "AgIAABUAAAAAAAAAAAAiwCcAAAAhAAAAAAAAAA==",
+              "ViewState": "AgIAABUAAAAAAAAAAAA4wCcAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-19T08:15:58.727Z",
               "EditorCaption": ""
@@ -67,7 +67,7 @@
               "RelativeDocumentMoniker": "PCB_Vision\\Presenters\\MainPresenter.cs",
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Presenters\\MainPresenter.cs",
               "RelativeToolTip": "PCB_Vision\\Presenters\\MainPresenter.cs",
-              "ViewState": "AgIAAFkBAAAAAAAAAAAUwGwBAAAqAAAAAAAAAA==",
+              "ViewState": "AgIAAMABAAAAAAAAAAAuwNMBAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-14T11:06:00.107Z",
               "EditorCaption": ""
@@ -82,7 +82,8 @@
               "RelativeToolTip": "PCB_Vision\\Models\\MainModel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-02T02:03:28.151Z"
+              "WhenOpened": "2025-11-02T02:03:28.151Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -93,7 +94,8 @@
               "ToolTip": "C:\\Users\\subin\\Documents\\GitHub\\pcb_vision\\PCB_Vision\\Views\\Form1.cs [\uB514\uC790\uC778]",
               "RelativeToolTip": "PCB_Vision\\Views\\Form1.cs [\uB514\uC790\uC778]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-02T01:47:56.418Z"
+              "WhenOpened": "2025-11-02T01:47:56.418Z",
+              "EditorCaption": " [\uB514\uC790\uC778]"
             }
           ]
         }

@@ -33,3 +33,8 @@ C:\Users\subin\Documents\GitHub\pcb_vision\PCB_Vision\obj\x64\Debug\net8.0-windo
 C:\Users\subin\Documents\GitHub\pcb_vision\PCB_Vision\obj\x64\Debug\net8.0-windows\win-x64\PCB_Vision.pdb
 C:\Users\subin\Documents\GitHub\pcb_vision\PCB_Vision\obj\x64\Debug\net8.0-windows\win-x64\PCB_Vision.genruntimeconfig.cache
 C:\Users\subin\Documents\GitHub\pcb_vision\PCB_Vision\obj\x64\Debug\net8.0-windows\win-x64\ref\PCB_Vision.dll
+C:\Users\subin\Documents\GitHub\pcb_vision\PCB_Vision\bin\x64\Debug\net8.0-windows\win-x64\Microsoft.Data.Sqlite.dll
+C:\Users\subin\Documents\GitHub\pcb_vision\PCB_Vision\bin\x64\Debug\net8.0-windows\win-x64\SQLitePCLRaw.batteries_v2.dll
+C:\Users\subin\Documents\GitHub\pcb_vision\PCB_Vision\bin\x64\Debug\net8.0-windows\win-x64\SQLitePCLRaw.core.dll
+C:\Users\subin\Documents\GitHub\pcb_vision\PCB_Vision\bin\x64\Debug\net8.0-windows\win-x64\SQLitePCLRaw.provider.e_sqlite3.dll
+C:\Users\subin\Documents\GitHub\pcb_vision\PCB_Vision\bin\x64\Debug\net8.0-windows\win-x64\e_sqlite3.dll
