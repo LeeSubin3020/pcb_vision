@@ -10,12 +10,10 @@ using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Web;
 
 namespace PCBVison.Presenters
 {
-    /// 애플리케이션의 핵심 로직을 담당하는 Presenter (주방장) 클래스입니다.
-    /// UI(View)로부터 이벤트를 받아 실제 동작을 수행하고, 그 결과를 다시 UI에 반영하도록 지시합니다.
-    /// UI에 대한 직접적인 참조 없이, 오직 IMainView 인터페이스를 통해서만 View와 소통합니다.
     public class MainPresenter
     {
         // --- 멤버 변수 선언 ---
@@ -23,17 +21,21 @@ namespace PCBVison.Presenters
         private readonly IMainView _view; // View와 통신하기 위한 인터페이스. Presenter는 이것이 Form1인지 전혀 모릅니다.
         private readonly PcbModel _model;
         private readonly HashSet<string> _activeFilters = new HashSet<string>();
-        private readonly string _logFilePath = @"C:\PCB_Inspection_Logs\Inspection_Detail_Log.txt";
+        private readonly string _logFilePath; //상세로그 저장 경로
         private readonly object _fileLock = new object(); // 스레드 안정성
+        private readonly string _defectImagePath;  // 불량 이미지 저장 폴더
 
         private VideoCapture _capture;    // OpenCV 카메라 캡처 객체
         private Mat _frame;               // 카메라로부터 한 프레임을 받아올 객체
         private Thread _cameraThread;     // 실시간 영상 처리를 위한 별도의 스레드
-        private bool _isRunning;          // 카메라 동작 상태 플래그
+        private bool _isRunning;         
         private int _totalCount = 0;
         private int _passCount = 0;
         private int _failCount = 0;
-        private int _inspectListCount = 1;
+        private int _inspectionSeq = 1;
+        private int _maxA1InFrame = 0;
+        private Dictionary<string, int> partCounts = new Dictionary<string, int>();  // 카운트용
+        private Dictionary<string, List<float>> _partConfidences = new Dictionary<string, List<float>>(); // Confidence 누적용
         /// <param name="view">Presenter와 연결될 View 객체 (Form1)</param>
 
         public MainPresenter(IMainView view, string onnxPath)
@@ -41,18 +43,21 @@ namespace PCBVison.Presenters
             _view = view;
             _model = new PcbModel(onnxPath);
 
-            //로그 디렉토리 생성
-            var dir = Path.GetDirectoryName(_logFilePath);
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
+            // 로그 폴더
+            string logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PCB_Inspection_Logs");
+            Directory.CreateDirectory(logDir); 
+            _logFilePath = Path.Combine(logDir, "Inspection_Detail_Log.txt");
 
-            // 첫 실행시 헤더 작성
+            // 불량 이미지 저장 폴더
+            string defectDir = Path.Combine(logDir, "Defects");
+            Directory.CreateDirectory(defectDir);
+            _defectImagePath = defectDir;
+
+            // 헤더 작성
             if (!File.Exists(_logFilePath))
             {
                 File.WriteAllText(_logFilePath,
-                "시간\t순번\t결과\tA1(횟수/conf)\tAMS-1117(횟수/conf)\tCH340G(횟수/conf)\tS4(횟수/conf)\t평균 Confidence\r\n");
+                    "시간\t순번\t결과\tA1(횟수/conf)\tAMS-1117(횟수/conf)\tCH340G(횟수/conf)\tS4(횟수/conf)\t평균 Confidence\r\n");
             }
 
             // View에서 발생하는 이벤트를 Presenter의 메서드와 연결(이벤트 구독)
@@ -85,14 +90,8 @@ namespace PCBVison.Presenters
                     return;
                 }
 
-                //if (!_capture.Read(_frame) || _frame.Empty())
-                //{
-                //    _view.ShowError("프레임 읽기 실패");
-                //    _capture?.Dispose(); // 수정: Release() 대신 Dispose() 사용
-                //}
-
-
                 // 3. 변수 및 스레드 초기화 후, 영상 처리 스레드 시작
+                _inspectionSeq = 1;
                 _view.ClearInspectionList();
                 _frame = new Mat();
                 _isRunning = true;
@@ -202,7 +201,11 @@ namespace PCBVison.Presenters
                             _view.Log("부품 감지됨. 5초 정밀 검사를 시작합니다...");
 
                             DateTime endTime = DateTime.Now.AddSeconds(5);
-                            var partCounts = new Dictionary<string, int>();
+
+                            // 부품 카운트 초기화
+                            partCounts.Clear();
+                            _partConfidences.Clear();
+                            _maxA1InFrame = 0;
 
                             // 5초 검사 루프
                             while (DateTime.Now < endTime && _isRunning)
@@ -216,29 +219,28 @@ namespace PCBVison.Presenters
                                 using (Mat inspectionFrame = _frame.Clone())
                                 {
                                     ApplyFilters(inspectionFrame);
-
                                     var currentResults = _model.Predict(inspectionFrame);
 
                                     // A1 카운팅 로직
                                     int a1CountInFrame = currentResults.Count(r => r.Label == "A1");
-                                    if (a1CountInFrame >= 2)
-                                    {
-                                        if (partCounts.ContainsKey("A1"))
-                                            partCounts["A1"]++;
-                                        else
-                                            partCounts.Add("A1", 1);
-                                    }
-                                    // 다른 부품 카운팅
-                                    foreach (var r in currentResults.Where(res => res.Label != "A1"))
-                                    {
-                                        if (partCounts.ContainsKey(r.Label))
-                                            partCounts[r.Label]++;
-                                        else
-                                            partCounts.Add(r.Label, 1);
-                                    }
+                                    _maxA1InFrame = Math.Max(_maxA1InFrame, a1CountInFrame);
 
+                                    // 모든 부품 카운팅
                                     foreach (var r in currentResults)
                                     {
+                                        string label = r.Label;
+
+                                        // 1. 부품 카운팅
+                                        if (!partCounts.ContainsKey(label))
+                                            partCounts[label] = 0;
+                                        partCounts[label]++;
+
+                                        // 2. Confidence 누적 (정확도 측정용)
+                                        if (!_partConfidences.ContainsKey(label))
+                                            _partConfidences[label] = new List<float>();
+                                        _partConfidences[label].Add(r.Confidence);
+
+                                        // 3.화면에 박스 + 라벨 그리기
                                         Scalar boxColor = _model.Colors[r.LabelIndex % _model.Colors.Length];
                                         Cv2.Rectangle(inspectionFrame, r.Rect, boxColor, 2);
                                         Cv2.PutText(inspectionFrame, $"{r.Label} {r.Confidence:F2}",
@@ -258,47 +260,118 @@ namespace PCBVison.Presenters
 
                             // Pass/Fail 판정
                             _totalCount++;
+
                             var requiredParts = new List<string> { "A1", "AMS-1117", "CH340G", "S4" };
                             const int minDetections = 7;
-
                             var missingParts = new List<string>();
-                   
 
-                            foreach (var partName in requiredParts)
+                            if (_maxA1InFrame < 2)
                             {
-                                int detected = partCounts.GetValueOrDefault(partName, 0);
-                                if (detected < minDetections)
+                                missingParts.Add("A1");
+                                _view.Log($"A1 부품 개체 수 부족: {_maxA1InFrame}개 (필요 2개)");
+                            }
+
+                            // 나머지 부품들 검사
+                            foreach (var part in requiredParts.Where(p => p != "A1"))
+                            {
+                                int count = partCounts.GetValueOrDefault(part, 0);
+                                if (count < minDetections)
                                 {
-                                    missingParts.Add(partName);
-                                    // 상세 로그는 여기서 남김 (디버깅용)
-                                    _view.Log($" -> 부품 {partName} 감지 횟수: {detected} (필요 {minDetections}회)");
+                                    missingParts.Add(part);
+                                    _view.Log($"부품 {part} 감지 횟수: {count} (필요 {minDetections}회)");
                                 }
                             }
+
                             bool isPass = missingParts.Count == 0;
-                            if (isPass)
-                            {
-                                _passCount++;
-                                _view.Log("PCB 검사 결과 정상입니다.");
-                                _view.AddInspectionResultLine($"{_inspectListCount++,4}: 정상");
 
+                            // 부품별 통계 + 전체 평균 계산
+                            var partStats = new List<string>();
+                            double totalConfSum = 0;
+                            int totalDetCount = 0;
+
+                            foreach (var part in requiredParts)
+                            {
+                                int count = partCounts.GetValueOrDefault(part, 0);
+                                float avgConf = _partConfidences.ContainsKey(part) && _partConfidences[part].Count > 0
+                                    ? _partConfidences[part].Average()
+                                    : 0f;
+
+                                if (part == "A1")
+                                {
+                                    partStats.Add($"A1({count}/{avgConf:F3}) [최대 동시: {_maxA1InFrame}]");
+                                }
+                                else
+                                {
+                                    partStats.Add($"{part}({count}/{avgConf:F3})");
+                                }
+
+                                if (_partConfidences.ContainsKey(part))
+                                {
+                                    totalConfSum += avgConf * _partConfidences[part].Count;
+                                    totalDetCount += _partConfidences[part].Count;
+                                }
                             }
-                            else
+
+                            double overallAvg = totalDetCount > 0 ? totalConfSum / totalDetCount : 0.0;
+                            
+                            string resultText = isPass ? "정상" : $"불량 - {string.Join(", ", missingParts)} 누락";
+
+                            if (isPass) _passCount++; else _failCount++;
+
+                            _view.AddInspectionResultLine($"{_inspectionSeq++,4}: {resultText}");
+                            _view.Log(isPass ? "PCB 검사 결과 정상입니다." : "PCB 검사 결과 불량입니다.");
+
+                            // 불량 이미지 저장
+                            if (!isPass) 
+                            { 
+                                using (var currentBitmap = _view.ImageViewerImage)
+                                {
+                                    if (currentBitmap != null)
+                                    {
+                                        try
+                                        {
+                                            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                                            string missingText = string.Join("_", missingParts);
+                                            if (string.IsNullOrEmpty(missingText)) missingText = "기타";
+
+                                            string fileName = $"불량_{timestamp}_{_inspectionSeq - 1:D3}_{missingText}.png";
+                                            string fullPath = Path.Combine(_defectImagePath, fileName);
+
+                                            currentBitmap.Save(fullPath, System.Drawing.Imaging.ImageFormat.Png);
+                                            _view.Log($"불량 이미지 저장: {fileName}");
+
+                                            if (_failCount == 1)
+                                            {
+                                                System.Diagnostics.Process.Start("explorer.exe", _defectImagePath);
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            _view.Log($"이미지 저장 실패: {ex.Message}");
+                                        }
+                                    }
+
+
+                                }
+                            }
+
+                            // 상세 로그 파일 저장
+                            string logLine = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\t" +
+                                             $"{_inspectionSeq - 1}\t" +
+                                             $"{resultText}\t" +
+                                             $"{string.Join("\t", partStats)}\t" +
+                                             $"{overallAvg:F3}";
+
+                            lock (_fileLock)
                             {
-                                _failCount++;
-                                _view.Log("PCB 검사 결과 불량입니다.");
-
-                                // 누락된 부품들을 "A1, CH340G, S4" 형태로 한 줄로 만든다
-                                string missingText = string.Join(", ", missingParts);
-
-                                _view.AddInspectionResultLine($"{_inspectListCount++,4}: 불량 - {missingText} 누락");
-
+                                File.AppendAllText(_logFilePath, logLine + "\r\n");
                             }
 
                             _view.TotalCount = _totalCount;
                             _view.PassCount = _passCount;
                             _view.FailCount = _failCount;
 
-                            Thread.Sleep(5000);
+                            Thread.Sleep(3000);
                         }
                         else
                         {
